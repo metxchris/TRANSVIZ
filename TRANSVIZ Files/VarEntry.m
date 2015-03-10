@@ -3,11 +3,6 @@ function [variable, option] = VarEntry(src, evt, cdf, variable, option, ui)
 % variable = ResetVarFields(idx,variable,ui)
 % option = SetSliderValues(option,variable,ui)
 
-%% TODO
-% store NaN values to X data for time only variables, then
-% forget about disabling plot toggle.
-% Add NaN values to before and after time range.
-
 %% Load CDF variable dated based on text box entry
 % Note: The depreciated function 'loadVarF(entryName)' uses generic
 % netcdf methods, which may be a useful alternative for data extraction.
@@ -22,10 +17,8 @@ end
 
 option.entryBoxNumber = idx;
 
-% Clear msg area
-if option.errorLevel == 0
-    set(ui.main.systemMsgH,'visible','off');
-end
+% clear systemMsg
+SystemMsg('', '', ui, option);
 
 % resets the corresponding variable data for blank entries
 if isempty(entryName)
@@ -35,6 +28,21 @@ end
 
 variable(idx).cdfName = option.cdfList{option.activeCdfIdx};
 finfo = cdf(option.activeCdfIdx).finfo;
+
+if all(ismember(entryName, '0123456789'))
+    % check if entry is a variable ID
+    varID = str2double(entryName)-1;
+    try
+        entryName = netcdf.inqVar(cdf(option.activeCdfIdx).ncid, varID);
+    catch
+        % variable not found
+        errMsg = ['Error: Variable corresponding to ID number ', ...
+            num2str(varID), ' not found in ', ...
+            option.cdfList{option.activeCdfIdx},'.CDF'];
+        SystemMsg(errMsg, 'Warning', ui, option);
+        return
+    end
+end
 
 % Creates a column cell array of the uppercase cdf variable names
 % varMatch = 1 if variable found, 0 if not.
@@ -87,7 +95,7 @@ switch varStruct.Datatype
         
         InterpolatedDimList = ...
             {'X', 'XB', 'RMAJM', 'THETA', 'RMJSYM', 'MCINDX', 'TIME', ...
-            'ILDEN', 'ILIM', 'INTNC', 'IVISB'};  
+            'ILDEN', 'ILIM', 'INTNC', 'IVISB'};
         if ~strcmp(InterpolatedDimList, dimNameX)
             if isempty(dimNameX)
                 dimNameX = '(none)';
@@ -99,7 +107,7 @@ switch varStruct.Datatype
             variable(idx) = ResetVarFields(idx,variable(idx),ui);
             % recalc slider values
             option = SetSliderValues(option,variable,ui);
-            varY=[variable.Y]; 
+            varY=[variable.Y];
             option.leadVar = find(~cellfun(@isempty,{varY.name}),1);
             if isempty(option.leadVar)
                 set(ui.main.sliderH,'enable','off');
@@ -117,7 +125,7 @@ switch varStruct.Datatype
         variable(idx).T.data  = netcdf.getVar(cdf(option.activeCdfIdx).ncid,dimID)';
         variable(idx).T.max   = max(max(variable(idx).T.data));
         variable(idx).T.min   = min(min(variable(idx).T.data));
-
+        
         % load position dimension
         if numDimensions == 2
             dimID     = netcdf.inqVarID(cdf(option.activeCdfIdx).ncid,dimNameX);
@@ -134,7 +142,7 @@ switch varStruct.Datatype
         % Interpolation Step
         variable(idx) = interpolateData(dimNameX, variable(idx));
         
-        if numDimensions == 2    
+        if numDimensions == 2
             variable(idx).numZones = cdf(option.activeCdfIdx).zones;
         elseif numDimensions == 1
             variable(idx).numZones = 1;
@@ -142,7 +150,7 @@ switch varStruct.Datatype
         
         variable(idx).numTimes = cdf(option.activeCdfIdx).times;
         
-        % stores the top-most active entry box, for purposes of 
+        % stores the top-most active entry box, for purposes of
         % determining plotted and exported labels
         varY=[variable.Y];
         option.leadVar = find(~cellfun(@isempty,{varY.name}),1);
@@ -150,44 +158,46 @@ switch varStruct.Datatype
         % set slider properties
         option = SetSliderValues(option,variable,ui);
         set(ui.main.sliderH,'enable','on');
-
+        
         % set tooltip properties
         interpZones = numel(variable(idx).X.data(:,1));
         tooltipstring = [...
             '<html>',...
             '<table cellpadding="1">',...
             '<tr><td>RunID:&nbsp;</td><td> ', ...
-                variable(idx).cdfName,'</td></tr>',...
+            variable(idx).cdfName,'</td></tr>',...
             '<tr><td>Date:&nbsp;</td><td> ', ...
-                cdf(option.activeCdfIdx).date,'</td></tr>',...
+            cdf(option.activeCdfIdx).date,'</td></tr>',...
             '</table>',...
             '<table cellpadding="1">',...
             '<tr><td colspan="2"><hr></td></tr>',...
             '<tr><td>Standard Zones:&nbsp;</td><td>', ...
-                num2str(variable(idx).numZones),'</td></tr>',...
+            num2str(variable(idx).numZones),'</td></tr>',...
             '<tr><td>Standard Times:&nbsp;</td><td>', ...
-                num2str(variable(idx).numTimes),'</td></tr>',...
+            num2str(variable(idx).numTimes),'</td></tr>',...
             '<tr><td>Interp Zones:&nbsp;</td><td>', ...
-                num2str(interpZones),'</td></tr>',...
+            num2str(interpZones),'</td></tr>',...
             '<tr><td>Interp Times:&nbsp;</td><td>', ...
-                num2str(variable(idx).T.size),'</td></tr>',...
+            num2str(variable(idx).T.size),'</td></tr>',...
             '<tr><td colspan="2"><hr></td></tr>',...
             '<tr><td>Start Time (s):&nbsp;</td><td>', ...
-                num2str(variable(idx).T.min),'</td></tr>',...
+            num2str(variable(idx).T.min),'</td></tr>',...
             '<tr><td>End Time (s):&nbsp;</td><td>', ...
-                num2str(variable(idx).T.max),'</td></tr>',...
+            num2str(variable(idx).T.max),'</td></tr>',...
             '</table></html>'];
         set(ui.main.entryHelpH(idx),'visible','on',...
             'tooltipstring',tooltipstring);
-   
-    case 'int8' 
-        % int8 are pointer variables.  Pointed to varID's are stored in 
+        
+    case 'int8'
+        % int8 are pointer variables.  Pointed to varID's are stored in
         % the attributes of int8 variables.
         varid = netcdf.inqVarID(cdf(option.activeCdfIdx).ncid, entryName);
-        fctID = finfo.Variables(varid+1).Attributes(3).Value;
-        msg = [finfo.Variables(varid+1).Name,' Fct_Ids: ', num2str(fctID)];
+        % shift fctID up by 2 to match our indexing scheme, which is
+        % that the first variable, TIME, has index of 1.
+        fctID = finfo.Variables(varid+1).Attributes(3).Value+2;
+        msg = [finfo.Variables(varid+1).Name,' Fct_Ids:  ', ...
+            num2str(fctID), '.'];
         SystemMsg(msg, 'Msg', ui, option);
-        [variable, option] = ClearVariable(idx, variable, option, ui);
         return
         
     otherwise
@@ -307,14 +317,14 @@ end %switch varDatatype
         % can easily be turned on/off if needed, and because this step
         % takes a negligable about of time to execute.
         % (chop off end points in Tmin and Tmax)
-        Tmin  = round(min(min(variable.T.data))*100+1)/100; 
+        Tmin  = round(min(min(variable.T.data))*100+1)/100;
         Tmax  = round(max(max(variable.T.data))*100-1)/100;
         Tgrid = double(Tmin:0.01:Tmax);
-
+        
         T = variable.T.data;
         X = variable.X.data;
         Y = variable.Y.data;
-
+        
         switch dimNameX
             case {'X','XB'}
                 interpMode = 'single';
@@ -367,7 +377,7 @@ end %switch varDatatype
                 Tq = single(repmat(Tgrid,numel(Xq(:,1)),1));
                 Yq = interp2(Xq0',T1',Yq0',Xq',Tq','linear',NaN)';
         end
-    
+        
         variable.T.data = Tgrid;
         variable.T.size = numel(Tgrid);
         variable.T.max  = Tmax;

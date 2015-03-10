@@ -15,18 +15,18 @@ finfo = cdf(option.activeCdfIdx).finfo;
 [varTable, idxRange] = buildTableEntries(finfo, 'single');
 % [varTable, idxRange] = buildTableEntries(finfo, 'int8');
 
-% % Ideas to finish vectorizing:
-% fSize={finfo.Variables(1,1:cdfVarCount).Size}';
-% varSize= cell(cdfVarCount,1);
-% zones = fSize{1};
-%     if numel(fSize{j})==1
-%         varSize{j}=1;
-%     else
-%         varSize{j}=fSize{j}(1);
-%     end
+% % % % Ideas to finish vectorizing:
+% % % fSize={finfo.Variables(1,1:cdfVarCount).Size}';
+% % % varSize= cell(cdfVarCount,1);
+% % % zones = fSize{1};
+% % %     if numel(fSize{j})==1
+% % %         varSize{j}=1;
+% % %     else
+% % %         varSize{j}=fSize{j}(1);
+% % %     end
 
-% Haven't been able to vectorize this entire loop yet.
 % Loop to read off variable size and dimension values.
+% Haven't been able to vectorize this entire loop yet.
 for j = idxRange
     % Store variable size information
     tableIdx = j - idxRange(1) + 1;
@@ -146,6 +146,9 @@ end
     function [varTable, idxRange] = buildTableEntries(finfo, dataType)
         % This function does not yet build the entire table; variable sizes
         % and dimensions are read off in a subsequent loop.
+        % This function represents a vectorized alternative to reading off
+        % table values using a loop. The vectorized approach is many times
+        % faster than the loop approach.
         
         % extract data type of each variable in CDF (either single or int8).
         % single variables have data that can be plotted.

@@ -1,6 +1,6 @@
 function VarListExport(option, ui, tableData, ColumnNames)
 SystemMsg('', '', ui, option); % clear systemMsg
-putvar(tableData)
+
 % user sets fileName, pathName
 [fileName, pathName, ~] = uiputfile( ...
     {'*.tsv', 'Tab Separated Values (*.tsv)';...
@@ -36,6 +36,5 @@ else
     SystemMsg(['Export Failed:  File ', pathName, fileName, ...
         ' has not been saved.'],'Warning', ui, option);
 end
-
 
 end
