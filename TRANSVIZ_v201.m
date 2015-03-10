@@ -22,7 +22,7 @@ function TRANSVIZ_v201(varargin)
 %% TRANSVIZ Code
 % Set testMode; 1 for testing, 0 for normal operation
 if isempty(varargin)
-    testMode = 1;
+    testMode = 0;
 else
     testMode = 1;
 end
