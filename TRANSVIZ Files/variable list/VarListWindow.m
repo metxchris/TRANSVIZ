@@ -4,89 +4,65 @@ if ~isempty(findobj('type','figure','name','Variable List'))
     fP = get(findobj('type','figure','name','Variable List'), 'position');
     position = [fP(1) fP(2) 669 420];
     close(findobj('type','figure','name','Variable List'));
-else 
-    position= [100,100,669,420];
+else
+    position = [100,100,669,420]; %default window position
 end
 
+% all data stored in CDF (other than variable values)
 finfo = cdf(option.activeCdfIdx).finfo;
-varList = {finfo.Variables.Name};
 
-% tic
+% build table entries for id, name, desc, and units
+[varTable, idxRange] = buildTableEntries(finfo, 'single');
+% [varTable, idxRange] = buildTableEntries(finfo, 'int8');
 
-ncDataType = 'single';
-j=1:numel(varList);
-tempData = {finfo.Variables(1,j).Datatype};
-tempData = tempData(strncmp(tempData,ncDataType,6));
-
-
-
-cdfVarCount = numel(tempData);
-varTable = cell(cdfVarCount,6);
-varRange=1:cdfVarCount;
-varNum = strtrim(cellstr(num2str(varRange')));
-varNames = {finfo.Variables(1,1:cdfVarCount).Name}';
-fAttributes = [finfo.Variables(1,1:cdfVarCount).Attributes];
-varDesc = deblank({fAttributes(2:2:2*cdfVarCount).Value}');
-varUnits = deblank({fAttributes(1:2:2*cdfVarCount).Value}');
-
-% cdfVarCount2 = numel(varList);
-% varTable = cell(cdfVarCount2-cdfVarCount,6);
-% varRange=cdfVarCount+1:cdfVarCount2;
-% varNum = strtrim(cellstr(num2str(varRange')));
-% varNames = {finfo.Variables(1,cdfVarCount+1:cdfVarCount2).Name}';
-% fAttributes2 = [finfo.Variables(1,cdfVarCount+1:cdfVarCount2).Attributes];
-% varDesc = deblank({fAttributes2(2:3:end).Value}');
-% varUnits = deblank({fAttributes2(1:3:end).Value}');
-% varIDs = {fAttributes2(3:3:end).Value}';
-
-varTable(:,1) = varNum;
-varTable(:,2) = varNames;
-varTable(:,3) = varDesc;
-varTable(:,6) = varUnits;
-% Cols 4,5 set in loop below
-
-% % fSize={finfo.Variables(1,1:cdfVarCount).Size}';
-% % varSize= cell(cdfVarCount,1);
-
-
+% % Ideas to finish vectorizing:
+% fSize={finfo.Variables(1,1:cdfVarCount).Size}';
+% varSize= cell(cdfVarCount,1);
 % zones = fSize{1};
-for j = varRange
-    %     use with zones variable
-    %     if numel(fSize{j})==1
-    %         varSize{j}=1;
-    %     else
-    %         varSize{j}=fSize{j}(1);
-    %     end
-    
-    
+%     if numel(fSize{j})==1
+%         varSize{j}=1;
+%     else
+%         varSize{j}=fSize{j}(1);
+%     end
+
+% Haven't been able to vectorize this entire loop yet.
+% Loop to read off variable size and dimension values.
+for j = idxRange
+    % Store variable size information
+    tableIdx = j - idxRange(1) + 1;
     jSize = finfo.Variables(1,j).Size;
     if numel(jSize) == 1
-        varTable(j,4) = {num2str(jSize)};
+        varTable(tableIdx, 4) = {num2str(jSize)};
     elseif  numel(jSize) == 2
-        varTable(j,4) = {[num2str(jSize(1,1)),' x ',num2str(jSize(1,2))]};
+        varTable(tableIdx, 4) = {[num2str(jSize(1,1)),' x ',num2str(jSize(1,2))]};
     end
-    
+    % store variable dimensions information
     jDim = numel(finfo.Variables(1,j).Dimensions);
     if jDim == 1
-        varTable(j,5) = {finfo.Variables(1,j).Dimensions(1,1).Name};
+        varTable(tableIdx, 5) = {finfo.Variables(1,j).Dimensions(1,1).Name};
     elseif  jDim == 2
-        varTable(j,5) = {[finfo.Variables(1,j).Dimensions(1,1).Name, ...
+        varTable(tableIdx, 5) = {[finfo.Variables(1,j).Dimensions(1,1).Name, ...
             ', ',finfo.Variables(1,j).Dimensions(1,2).Name]};
     end
-    
 end
 
-
-% toc
-
-buttonColor = [240/255,240/255,240/255]; %gray
+buttonColor = [240 240 240]./255; %gray
 ColumnNames = {'VarID','Name','Description','Size','Dimensions','Units'};
 htmlString = '<html><div style="color:rgb(24,90,169);font-weight:bold">';
 
+% create varlist figure
 ui.varlist.figH = figure(2);
 set(ui.varlist.figH,...
     'name','Variable List',...
-    'Position',position);
+    'Position',position, ...
+    'MenuBar','None');
+% create varlist menu
+ui.varlist.fileMH = uimenu(ui.varlist.figH,...
+    'Label','&File');
+ui.varlist.openFMH = uimenu(ui.varlist.fileMH,...
+    'Label','&Export Table...', ...
+    'callback',@VarListExportCB);
+% create varlist table
 ui.varlist.tableH = uitable(ui.varlist.figH,...
     'Units','Pixels',...
     'Position', [10,10,649,400],...
@@ -149,7 +125,6 @@ ui.varlist.unitsBH = uicontrol(ui.varlist.figH,...
     'backgroundColor',buttonColor,...
     'HorizontalAlignment','center');
 
-
 try
     % apply java techniques to edit button properties
     buttonEdit(ui.varlist.varidBH);
@@ -166,6 +141,53 @@ end
         jButton = java(findjobj(handle));
         jButton.setCursor(java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         jButton.setFlyOverAppearance(true);
+    end
+
+    function [varTable, idxRange] = buildTableEntries(finfo, dataType)
+        % This function does not yet build the entire table; variable sizes
+        % and dimensions are read off in a subsequent loop.
+        
+        % extract data type of each variable in CDF (either single or int8).
+        % single variables have data that can be plotted.
+        % int8 are pointer variables and do not contain data.
+        varDataTypes = {finfo.Variables(:).Datatype};
+        
+        % logical array of all variables of type specified by dataType
+        typeArray = strncmp(varDataTypes, dataType, 6);
+        
+        % initial and final idx of matched variable type
+        minIdx = find(typeArray,1);
+        maxIdx = find(typeArray,1, 'last');
+        
+        % create idx ranges for reading CDF data
+        idxRange = minIdx:maxIdx;
+        
+        switch dataType
+            case 'single'
+                idxScale = idxRange*2;
+            case 'int8'
+                idxScale = idxRange*3;
+        end
+        idxShift = idxScale - idxScale(1) + 1;
+        
+        % preallocate cell for storing table data of single variables
+        varTable = cell(numel(idxRange), 6);
+        
+        % store variable IDs for table presentation
+        varTable(:,1) = strtrim(cellstr(num2str(idxRange')));
+        
+        % store variable names for table presentation
+        varTable(:,2) = {finfo.Variables(idxRange).Name}';
+        
+        % store variable descriptions and units for table presentation
+        fAttributes = [finfo.Variables(idxRange).Attributes];
+        varTable(:,3) = deblank({fAttributes(idxShift+1).Value}');
+        varTable(:,6) = deblank({fAttributes(idxShift).Value}');
+    end
+
+    function VarListExportCB(varargin)
+       tableData = get(ui.varlist.tableH, 'data');
+       VarListExport(option, ui, tableData, ColumnNames); 
     end
 
 end
