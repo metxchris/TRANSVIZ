@@ -1,4 +1,4 @@
-TRANSVIZ v2.01
+TRANSVIZ v2.02
 by Christopher Wilson
 cwils16@u.rochester.edu
 
