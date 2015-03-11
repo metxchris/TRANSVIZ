@@ -1,6 +1,5 @@
 TRANSVIZ v2.02
 by Christopher Wilson
-cwils16@u.rochester.edu
 
 Compatibility Note:
 This version of TRANSVIZ was written in Matlab version R2013a.  Several of the coding methods used are not compatible in newer versions of Matlab, such as version R2014b.  In terms of forward compatibility usage, this code should be rewritten in Python, since Matlab clearly does not provide a stable long-term coding platform.
