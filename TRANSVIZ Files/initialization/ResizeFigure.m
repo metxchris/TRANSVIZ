@@ -16,7 +16,7 @@ fP = get(ui.main.figH, 'Position');
 % fP(4) = figure height
 
 % Set GUI Positioning Variables
-h(1) = fP(4) - 65;
+h(1) = fP(4) - 55;
 h(2) = h(1) - 55;
 h(3) = h(2) - 148;
 gS = 17; % gui element spacing
@@ -36,11 +36,11 @@ for j=1:numel(ui.main.entryLabelH)
     set(ui.main.entryLabelH(j), ...
         'Position', [fP(3)-125, h(2)-20*j, 20, 16]);
     set(ui.main.entryHelpH(j), ...
-        'Position', [fP(3)-15, h(2)-20*j+1, 10, 16]);
+        'Position', [fP(3)-18, h(2)-20*j+1, 14, 16]);
 end
 set(ui.main.activeCdfH, 'Position', [fP(3)-125, h(1)-gS, 105, 16]);
 set(ui.main.sliderH, 'Position', [70, 11, fP(3)-210, 21]);
-set(ui.main.splashH, 'Position', [70, 84, fP(3)-215, fP(4)-135]);
+set(ui.main.splashH, 'Position', [70, 84, fP(3)-215, fP(4)-125]);
 set(ui.main.sliderModeH, 'Position', [fP(3)-125, h(3)-14, 100, 16]);
 set(ui.main.sliderModeB(1), 'Position', [6 -8 50 22]);
 set(ui.main.sliderModeB(2), 'Position', [57 -8 50 22]);

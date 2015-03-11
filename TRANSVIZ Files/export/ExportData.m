@@ -42,18 +42,18 @@ switch option.plotMode
         end
         
         % set headerLine
-        Ylabel = [variable(option.leadVar).Y.label];
-        Yunits = [variable(option.leadVar).Y.units,' '];
+        yLabel = [variable(option.leadVar).Y.label];
+        yUnits = [variable(option.leadVar).Y.units,' '];
         switch option.slider.mode
             case 'Time'
-                Xlabel = [variable(option.leadVar).X.label];
-                Xunits = [variable(option.leadVar).X.units,' '];
+                xLabel = [variable(option.leadVar).X.label];
+                xUnits = [variable(option.leadVar).X.units,' '];
             case 'Position'
-                Xlabel = [variable(option.leadVar).T.label];
-                Xunits = [variable(option.leadVar).T.units,' '];
+                xLabel = [variable(option.leadVar).T.label];
+                xUnits = [variable(option.leadVar).T.units,' '];
         end
         sliderString = SetSliderString(variable, option);
-        headerLine = [Ylabel, Yunits, 'vs. ', Xlabel, Xunits, ...
+        headerLine = [yLabel, yUnits, 'vs. ', xLabel, xUnits, ...
             'at ', sliderString];
         
         % write to file
@@ -69,18 +69,46 @@ switch option.plotMode
             fprintf(fileID,'\n%20s,%3s,',' ','y');
             fprintf(fileID,'%12.3e,',yData{j}(2:end-1));
         end
-        fclose(fileID);
-        
-        % check if file has been created and report status
-        if exist([pathName,fileName],'file')
-            SystemMsg(['Export Successful:  Data saved to ', ...
-                pathName,fileName],'Msg', ui, option);
-        else
-            SystemMsg(['Export Failed:  File ', pathName, fileName, ...
-                ' has not been saved.'],'Warning', ui, option);
-        end
     case 'Surface Plot'
+        surfaceH=findobj(ui.main.axesH, 'type', 'surface');
+        if isempty(surfaceH)
+            SystemMsg('Error:  No data plotted. Export canceled.',...
+                'Warning', ui, option);
+            return
+        end
+        xData = num2cell(get(surfaceH, 'xd'));
+        tData = num2cell(get(surfaceH, 'yd'));
+        yData = num2cell(get(surfaceH, 'zd'));
+        xName = variable(1).X.name; xUnits = variable(1).X.units;
+        tName = variable(1).T.name; tUnits = variable(1).T.units;
+        yName = variable(1).Y.name; yUnits = variable(1).Y.units;
         
+        fprintf(fileID,'%6s, %6s, %8s','x-axis:', xName, xUnits);
+        for j=1:numel(xData(:,1))
+            fprintf(fileID,'\n%s','');
+            fprintf(fileID,'%12.3f,',xData{j, :});
+        end
+        fprintf(fileID,'\n%6s, %6s, %8s','t-axis:', tName, tUnits);
+        for j=1:numel(tData(:,1))
+            fprintf(fileID,'\n%s','');
+            fprintf(fileID,'%12.3f,',tData{j, :});
+        end
+        fprintf(fileID,'\n%6s, %6s, %8s','y-axis:', yName, yUnits);
+        for j=1:numel(yData(:,1))
+            fprintf(fileID,'\n%s','');
+            fprintf(fileID,'%12.3e,',yData{j, :});
+        end
+        
+end
+
+fclose(fileID);
+% check if file has been created and report status
+if exist([pathName,fileName],'file')
+    SystemMsg(['Export Successful:  Data saved to ', ...
+        pathName,fileName],'Msg', ui, option);
+else
+    SystemMsg(['Export Failed:  File ', pathName, fileName, ...
+        ' has not been saved.'],'Warning', ui, option);
 end
 
 end

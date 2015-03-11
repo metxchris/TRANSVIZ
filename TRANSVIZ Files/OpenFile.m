@@ -3,6 +3,7 @@ if option.testMode>0
     disp('OpenFile.m called');
 end;
 % Select CDF to load
+
 if evt
     filePath = src;
     splitPath = strsplit(filePath,'\');
@@ -62,8 +63,16 @@ if strcmp(get(ui.main.splashH,'visible'), 'on')
     set(ui.main.axesH,'visible','on');
     set(ui.menu.exportFigureMH,'enable','on');
     set(ui.main.activeCdfH,'enable','on');
-    set([ui.main.sliderModeB(:)],'enable','on'); 
-    set([ui.main.sliderModeB(1)], 'BackgroundColor', [0.95 0.95 0.95]);
+    set(ui.main.sliderModeB(:),'enable','on'); 
+    set(ui.main.sliderModeB(1), 'BackgroundColor', [0.95 0.95 0.95]);
+    set(ui.menu.windowMH,'enable','on'); 
+    set(ui.menu.toolsMH,'enable','on'); 
+    set(ui.menu.editMH,'enable','on'); 
+    set(ui.menu.exportDataMH,'enable','on'); 
+    set(ui.menu.exportFigureMH,'enable','on'); 
+    set(ui.main.entryLabelH(:),'enable','on'); 
+    set(ui.main.textHeaderH(:),'enable','on'); 
+    
 end
 
 try

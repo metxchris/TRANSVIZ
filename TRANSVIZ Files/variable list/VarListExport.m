@@ -1,4 +1,4 @@
-function VarListExport(option, ui, tableData, ColumnNames)
+function VarListExport(tableType, option, ui, tableData, ColumnNames)
 SystemMsg('', '', ui, option); % clear systemMsg
 
 % user sets fileName, pathName
@@ -21,8 +21,13 @@ if fileID < 0
 end
 
 % write to file
-formatspec = '%4s\t%12s\t%50s\t%10s\t%16s\t%12s\n';
-fprintf(fileID,formatspec,ColumnNames{:});
+switch tableType
+    case 'varList'
+        formatspec = '%4s\t%12s\t%60s\t%16s\t%16s\t%12s\n';
+    case 'pointerList'
+        formatspec = '%4s\t%12s\t%60s\t%16s\t%59s\n';
+end
+fprintf(fileID, formatspec, ColumnNames{:});
 for j = 1:numel(tableData(:,1))
     fprintf(fileID,formatspec,tableData{j,:});
 end

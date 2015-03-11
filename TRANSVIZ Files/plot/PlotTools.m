@@ -16,6 +16,10 @@ switch sourceLabel
         switch currentState
             case 'on'
                 zoom off
+                switch option.plotMode
+                    case 'Surface Plot'
+                        rotate3d on;
+                end
             case 'off'
                 zoom on;
                 set(handle, 'Checked', 'on');
@@ -25,6 +29,10 @@ switch sourceLabel
         switch currentState
             case 'on'
                 pan off
+                switch option.plotMode
+                    case 'Surface Plot'
+                        rotate3d on;
+                end
             case 'off'
                 pan on;
                 set(handle, 'Checked', 'on');

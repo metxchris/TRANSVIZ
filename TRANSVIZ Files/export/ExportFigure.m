@@ -11,16 +11,14 @@ end
 
 try
     SetBackgroundColor(ui, 'white');
-    
     switch option.plotMode
         case 'Line Plot'
-            print(ui.main.figH, '-depsc', '-noui', '-painters', [pathName, fileName]);
+            print(ui.main.figH, '-depsc', '-noui', '-painters', ...
+                [pathName, fileName]);
         case 'Surface Plot'
-% %             set(heatMapH,'facecolor','interp');
-% %             colorModeF(colorMap,512)
-% %             print(ui.main.figH,'-depsc','-noui','-opengl', [pathName, fileName]);
-% %             colorModeF(colorMap,64)
-% %             set(heatMapH,'facecolor','texturemap');
+            option.plotMode
+            print(ui.main.figH, '-depsc', '-noui', '-opengl', ...
+                [pathName, fileName]);
     end
 catch
     SystemMsg('Export Error: Unknown error occured when exporting figure.', ...

@@ -7,10 +7,13 @@ function [variable, option] = VarEntry(src, evt, cdf, variable, option, ui)
 % Note: The depreciated function 'loadVarF(entryName)' uses generic
 % netcdf methods, which may be a useful alternative for data extraction.
 % NetCDF matrix data displays dimensionally as POS x TIME
+
 if evt
+    % when called by the variable list
     entryName = char(strrep(upper(src),' ',''));
-    idx = 1;
+    idx = evt;
 else
+    % when the user enters a variable
     entryName = char(strrep(upper(get(src,'String')),' ',''));
     idx = str2double(get(src,'tag'));
 end
@@ -22,7 +25,7 @@ SystemMsg('', '', ui, option);
 
 % resets the corresponding variable data for blank entries
 if isempty(entryName)
-    [variable, option] = ClearVariable(idx, variable, option, ui);
+    [variable, option] = ClearVariable('all', idx, variable, option, ui);
     return
 end
 
@@ -37,7 +40,7 @@ if all(ismember(entryName, '0123456789'))
     catch
         % variable not found
         errMsg = ['Error: Variable corresponding to ID number ', ...
-            num2str(varID), ' not found in ', ...
+            num2str(varID+1), ' not found in ', ...
             option.cdfList{option.activeCdfIdx},'.CDF'];
         SystemMsg(errMsg, 'Warning', ui, option);
         return
@@ -104,7 +107,7 @@ switch varStruct.Datatype
                 ' with x-axis dimension ', dimNameX, ...
                 ' does not have a defined interpolation grid.'];
             SystemMsg(errMsg,'Error',ui,option);
-            variable(idx) = ResetVarFields(idx,variable(idx),ui);
+            [variable, option] = ClearVariable('', idx, variable, option, ui);
             % recalc slider values
             option = SetSliderValues(option,variable,ui);
             varY=[variable.Y];
@@ -159,33 +162,38 @@ switch varStruct.Datatype
         option = SetSliderValues(option,variable,ui);
         set(ui.main.sliderH,'enable','on');
         
+        switch option.plotMode
+            case 'Line Plot'
+                % enable '+' button
+                set(ui.main.entryHelpH(idx),'visible','on');
+                % remove '+' button borders again if needed (they sneak back)
+                jButton = findjobj(ui.main.entryHelpH(idx));
+                jButton.Border = [];
+                jButton.repaint;
+        end
+   
         % set tooltip properties
-        interpZones = numel(variable(idx).X.data(:,1));
-        tooltipstring = [...
+        tooltipstring = [ ...
             '<html>',...
             '<table cellpadding="1">',...
-            '<tr><td>RunID:&nbsp;</td><td> ', ...
+            '<tr><td>CDF:&nbsp;</td><td> ', ...
             variable(idx).cdfName,'</td></tr>',...
-            '<tr><td>Date:&nbsp;</td><td> ', ...
-            cdf(option.activeCdfIdx).date,'</td></tr>',...
             '</table>',...
             '<table cellpadding="1">',...
             '<tr><td colspan="2"><hr></td></tr>',...
-            '<tr><td>Standard Zones:&nbsp;</td><td>', ...
-            num2str(variable(idx).numZones),'</td></tr>',...
-            '<tr><td>Standard Times:&nbsp;</td><td>', ...
-            num2str(variable(idx).numTimes),'</td></tr>',...
-            '<tr><td>Interp Zones:&nbsp;</td><td>', ...
-            num2str(interpZones),'</td></tr>',...
-            '<tr><td>Interp Times:&nbsp;</td><td>', ...
-            num2str(variable(idx).T.size),'</td></tr>',...
+            '<tr><td>Variable:&nbsp;</td><td> ', ...
+            entryName, '<br>', ...
+            '<tr><td>Name:&nbsp;</td><td> ', ...
+            variable(idx).Y.label,'</td></tr>',...
+            '<tr><td>Units:&nbsp;</td><td> ', ...
+            variable(idx).Y.units,'</td></tr>',...
             '<tr><td colspan="2"><hr></td></tr>',...
-            '<tr><td>Start Time (s):&nbsp;</td><td>', ...
-            num2str(variable(idx).T.min),'</td></tr>',...
-            '<tr><td>End Time (s):&nbsp;</td><td>', ...
-            num2str(variable(idx).T.max),'</td></tr>',...
+            '<tr><td>Zones:&nbsp;</td><td>', ...
+            num2str(variable(idx).numZones),'</td></tr>',...
+            '<tr><td>Times:&nbsp;</td><td>', ...
+            num2str(variable(idx).numTimes),'</td></tr>',...
             '</table></html>'];
-        set(ui.main.entryHelpH(idx),'visible','on',...
+        set(ui.main.entryBoxH(idx),'visible','on',...
             'tooltipstring',tooltipstring);
         
     case 'int8'
@@ -198,6 +206,7 @@ switch varStruct.Datatype
         msg = [finfo.Variables(varid+1).Name,' Fct_Ids:  ', ...
             num2str(fctID), '.'];
         SystemMsg(msg, 'Msg', ui, option);
+        [variable, option] = ClearVariable('', idx, variable, option, ui);
         return
         
     otherwise
@@ -209,15 +218,20 @@ end %switch varDatatype
 
 %% Internal Functions
 
-    function [variable, option] = ClearVariable(idx, variable, option, ui)
+    function [variable, option] = ClearVariable(clearType, idx, variable, option, ui)
         variable(idx) = ResetVarFields(idx,variable(idx),ui);
-        varY0=[variable.Y];
-        option.leadVar = find(~cellfun(@isempty,{varY0.name}),1);
+        varY0 = [variable.Y];
+        option.leadVar = find(~cellfun(@isempty,{varY0.name}), 1);
         if isempty(option.leadVar)
-            set(ui.main.sliderH,'enable','off');
+            set(ui.main.sliderH, 'enable', 'off');
         else
-            option = SetSliderValues(option,variable,ui);% recalc slider values
+            option = SetSliderValues(option, variable, ui);% recalc slider values
         end
+        switch clearType
+            case 'all'
+                set(ui.main.entryBoxH(idx),'string','');
+        end
+        set(ui.main.entryBoxH(idx),'tooltipstring','');
     end
 
     function variable = ResetVarFields(idx,variable,ui)
@@ -235,7 +249,6 @@ end %switch varDatatype
         variable.T = varFields;
         variable.cdfName   = {''};
         variable.linePlotH = {[]};
-        set(ui.main.entryBoxH(idx),'string','');
         set(ui.main.entryHelpH(idx),'visible','off');
     end % ResetVarFields
 

@@ -2,7 +2,7 @@ function ui = ConsoleWindow(ui)
 
 close(findobj('type','figure','name','Console'))
 
-ui.console.figH = figure(3);
+ui.console.figH = figure(4);
 set(ui.console.figH,...
     'name','Console',...
     'Position',[100,100,800,418]);

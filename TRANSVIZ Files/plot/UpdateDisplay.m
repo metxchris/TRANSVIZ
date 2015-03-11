@@ -20,7 +20,7 @@ switch option.plotMode
     case 'Line Plot'
         [variable, ui] = LinePlot(variable, option, ui);
     case 'Surface Plot'
-        % surfacePlotF();
+        [variable, ui] = SurfacePlot(variable, option, ui);
 end
 
 end %UpdateDisplay
