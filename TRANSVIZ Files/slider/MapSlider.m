@@ -15,21 +15,8 @@ switch option.slider.mode
     case 'Position'
         % these numericSteps must match those given in the
         % interpolateData() function within VarEntry.m
-        switch variable(option.leadVar).X.name
-            case {'X','XB'}
-                numericStep = 0.01; % dimensionless
-            case 'MCINDX'
-                numericStep = 1/220; % dimensionless
-            case {'RMAJM','RMJSYM'}
-                numericStep = 1; % meters
-            case 'THETA'
-                numericStep = 0.0628; % rads
-            case {'ILDEN', 'ILIM', 'INTNC', 'IVISB'}
-                numericStep = 1;
-            case ''
-                % one-dimensional variables
-                numericStep = 0.01; % dimensionless
-        end
+        numericStep = NumericStepDictionary( ...
+            variable(option.leadVar).X.name);
         convFactor = 1/numericStep;
         varX=[variable.X];
         option.slider.value;
