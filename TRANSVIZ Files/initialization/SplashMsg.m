@@ -110,24 +110,28 @@ htmlStr = [ ...
     tableEnd ...
     ];
 
-
-setSplashF(htmlStr,1,ui)
+setSplashF(htmlStr,1,ui);
 
   function setSplashF(inputString,counter,ui)
        
         try
             jScrollPane = findjobj(ui.main.splashH);
-            jViewPort = jScrollPane.getViewport;
+            for k = 1:numel(jScrollPane)
+                try
+                    jViewPort=jScrollPane(k).getViewport;
+                    break
+                end
+            end
             jEditbox = jViewPort.getComponent(0);
             jEditbox.setContentType('text/html');
             jEditbox.setText(inputString);
         catch
             disp(['failed to find splash table (',counter,')'])
-            if counter<=10 % Try up to 10 times to find the splash table
+            if counter <= 10 % Try up to 10 times to find the splash table
                 counter=counter+1;
-                setSplashF(inputString,counter)
+                setSplashF(inputString, counter);
             end
         end
-    end
+  end
 
 end

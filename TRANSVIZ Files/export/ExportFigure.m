@@ -13,7 +13,7 @@ try
     SetBackgroundColor(ui, 'white');
     switch option.plotMode
         case 'Line Plot'
-            print(ui.main.figH, '-depsc', '-noui', '-painters', ...
+            print(ui.main.figH, '-depsc', '-noui', '-opengl', ...
                 [pathName, fileName]);
         case 'Surface Plot'
             option.plotMode

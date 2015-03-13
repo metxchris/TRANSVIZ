@@ -1,21 +1,21 @@
 function [variable, option] = VarEntry(src, evt, cdf, variable, option, ui)
 %% Internal Functions:
-% variable = ResetVarFields(idx,variable,ui)
-% option = SetSliderValues(option,variable,ui)
+% variable = ResetVarFields(idx, variable, ui)
+% option = SetSliderValues(option, variable, ui)
 
 %% Load CDF variable dated based on text box entry
 % Note: The depreciated function 'loadVarF(entryName)' uses generic
 % netcdf methods, which may be a useful alternative for data extraction.
 % NetCDF matrix data displays dimensionally as POS x TIME
 
-if evt
+if isnumeric(evt)
     % when called by the variable list
-    entryName = char(strrep(upper(src),' ',''));
+    entryName = char(strrep(upper(src), ' ', ''));
     idx = evt;
 else
     % when the user enters a variable
-    entryName = char(strrep(upper(get(src,'String')),' ',''));
-    idx = str2double(get(src,'tag'));
+    entryName = char(strrep(upper(get(src, 'String')), ' ', ''));
+    idx = str2double(get(src, 'tag'));
 end
 
 % clear systemMsg
@@ -39,7 +39,7 @@ if all(ismember(entryName, '0123456789'))
         % variable not found
         errMsg = ['Error: Variable corresponding to ID number ', ...
             num2str(varID+1), ' not found in ', ...
-            option.cdfList{option.activeCdfIdx},'.CDF'];
+            option.cdfList{option.activeCdfIdx}, '.CDF'];
         SystemMsg(errMsg, 'Warning', ui);
         return
     end
@@ -48,17 +48,17 @@ end
 % Creates a column cell array of the uppercase cdf variable names
 % varMatch = 1 if variable found, 0 if not.
 varList = {finfo.Variables.Name}';
-varStrcmp = strcmp(entryName,varList);
+varStrcmp = strcmp(entryName, varList);
 varMatch = sum(varStrcmp);
 if ~varMatch
-    errMsg = ['Error: Variable ''',entryName,''' not found in ', ...
+    errMsg = ['Error: Variable ''', entryName, ''' not found in ', ...
         cdf(option.activeCdfIdx).name];
     SystemMsg(errMsg, 'Error', ui);
     return
 end
 
 % set entryBox string to uppercase
-set(ui.main.entryBoxH(idx),'string',entryName);
+set(ui.main.entryBoxH(idx), 'string', entryName);
 
 %% Load variable data
 % Note: variable plotting data is not stored in varStruct.
@@ -73,9 +73,9 @@ switch varStruct.Datatype
         % load variable data
         varID = find(varStrcmp)-1;
         variable(idx).Y.name  = varStruct.Name;
-        variable(idx).Y.units = StringCleaner(varStruct.Attributes(1).Value,'Units');
-        variable(idx).Y.label = StringCleaner(varStruct.Attributes(2).Value,'Label');
-        variable(idx).Y.data  = netcdf.getVar(cdf(option.activeCdfIdx).ncid,varID);
+        variable(idx).Y.units = StringCleaner(varStruct.Attributes(1).Value, 'Units');
+        variable(idx).Y.label = StringCleaner(varStruct.Attributes(2).Value, 'Label');
+        variable(idx).Y.data  = netcdf.getVar(cdf(option.activeCdfIdx).ncid, varID);
         variable(idx).Y.size  = size(variable(idx).Y.data);
         variable(idx).Y.max   = max(max(variable(idx).Y.data));
         variable(idx).Y.min   = min(min(variable(idx).Y.data));
@@ -101,41 +101,41 @@ switch varStruct.Datatype
             if isempty(dimNameX)
                 dimNameX = '(none)';
             end
-            errMsg = ['Error: Variable ',variable(idx).Y.name, ...
+            errMsg = ['Error: Variable ', variable(idx).Y.name, ...
                 ' with x-axis dimension ', dimNameX, ...
                 ' does not have a defined interpolation grid.'];
             SystemMsg(errMsg, 'Error', ui);
             [variable, option] = ClearVariable('', idx, variable, option, ui);
             % recalc slider values
-            option = SetSliderValues(option,variable,ui);
+            option = SetSliderValues(option, variable, ui);
             varY=[variable.Y];
-            option.leadVar = find(~cellfun(@isempty,{varY.name}),1);
+            option.leadVar = find(~cellfun(@isempty, {varY.name}), 1);
             if isempty(option.leadVar)
-                set(ui.main.sliderH,'enable','off');
+                set(ui.main.sliderH, 'enable', 'off');
             end
             return
         end
         
         % load time dimension
-        dimID     = netcdf.inqVarID(cdf(option.activeCdfIdx).ncid,dimNameT);
+        dimID     = netcdf.inqVarID(cdf(option.activeCdfIdx).ncid, dimNameT);
         dimStruct = finfo.Variables(dimID+1);
         variable(idx).T.name  = dimStruct.Name;
         variable(idx).T.size  = dimStruct.Size;
-        variable(idx).T.units = StringCleaner(dimStruct.Attributes(1).Value,'Units');
-        variable(idx).T.label = StringCleaner(dimStruct.Attributes(2).Value,'Label');
-        variable(idx).T.data  = netcdf.getVar(cdf(option.activeCdfIdx).ncid,dimID)';
+        variable(idx).T.units = StringCleaner(dimStruct.Attributes(1).Value, 'Units');
+        variable(idx).T.label = StringCleaner(dimStruct.Attributes(2).Value, 'Label');
+        variable(idx).T.data  = netcdf.getVar(cdf(option.activeCdfIdx).ncid, dimID)';
         variable(idx).T.max   = max(max(variable(idx).T.data));
         variable(idx).T.min   = min(min(variable(idx).T.data));
         
         % load position dimension
         if numDimensions == 2
-            dimID     = netcdf.inqVarID(cdf(option.activeCdfIdx).ncid,dimNameX);
+            dimID     = netcdf.inqVarID(cdf(option.activeCdfIdx).ncid, dimNameX);
             dimStruct = finfo.Variables(dimID+1);
             variable(idx).X.name  = dimStruct.Name;
             variable(idx).X.size  = dimStruct.Size;
-            variable(idx).X.units = StringCleaner(dimStruct.Attributes(1).Value,'Units');
-            variable(idx).X.label = StringCleaner(dimStruct.Attributes(2).Value,'Label');
-            variable(idx).X.data  = netcdf.getVar(cdf(option.activeCdfIdx).ncid,dimID);
+            variable(idx).X.units = StringCleaner(dimStruct.Attributes(1).Value, 'Units');
+            variable(idx).X.label = StringCleaner(dimStruct.Attributes(2).Value, 'Label');
+            variable(idx).X.data  = netcdf.getVar(cdf(option.activeCdfIdx).ncid, dimID);
         elseif numDimensions == 1
             variable(idx).X.name = '';
         end
@@ -154,45 +154,45 @@ switch varStruct.Datatype
         % stores the top-most active entry box, for purposes of
         % determining plotted and exported labels
         varY=[variable.Y];
-        option.leadVar = find(~cellfun(@isempty,{varY.name}),1);
+        option.leadVar = find(~cellfun(@isempty, {varY.name}), 1);
         
         % set slider properties
-        option = SetSliderValues(option,variable,ui);
-        set(ui.main.sliderH,'enable','on');
+        option = SetSliderValues(option, variable, ui);
+        set(ui.main.sliderH, 'enable', 'on');
         
         switch option.plotMode
             case 'Line Plot'
                 % enable '+' button
-                set(ui.main.entryHelpH(idx),'visible','on');
+                set(ui.main.entryHelpH(idx), 'visible', 'on');
                 % remove '+' button borders again if needed (they sneak back)
-                jButton = findjobj(ui.main.entryHelpH(idx));
-                jButton.Border = [];
-                jButton.repaint;
+                %                 jButton = findjobj(ui.main.entryHelpH(idx));
+                %                 jButton.Border = [];
+                %                 jButton.repaint;
         end
-   
+        
         % set tooltip properties
         tooltipstring = [ ...
-            '<html>',...
-            '<table cellpadding="1">',...
+            '<html>', ...
+            '<table cellpadding="1">', ...
             '<tr><td>CDF:&nbsp;</td><td> ', ...
-            variable(idx).cdfName,'</td></tr>',...
-            '</table>',...
-            '<table cellpadding="1">',...
-            '<tr><td colspan="2"><hr></td></tr>',...
+            variable(idx).cdfName, '</td></tr>', ...
+            '</table>', ...
+            '<table cellpadding="1">', ...
+            '<tr><td colspan="2"><hr></td></tr>', ...
             '<tr><td>Variable:&nbsp;</td><td> ', ...
             entryName, '<br>', ...
             '<tr><td>Name:&nbsp;</td><td> ', ...
-            variable(idx).Y.label,'</td></tr>',...
+            variable(idx).Y.label, '</td></tr>', ...
             '<tr><td>Units:&nbsp;</td><td> ', ...
-            variable(idx).Y.units,'</td></tr>',...
-            '<tr><td colspan="2"><hr></td></tr>',...
+            variable(idx).Y.units, '</td></tr>', ...
+            '<tr><td colspan="2"><hr></td></tr>', ...
             '<tr><td>Zones:&nbsp;</td><td>', ...
-            num2str(variable(idx).numZones),'</td></tr>',...
+            num2str(variable(idx).numZones), '</td></tr>', ...
             '<tr><td>Times:&nbsp;</td><td>', ...
-            num2str(variable(idx).numTimes),'</td></tr>',...
+            num2str(variable(idx).numTimes), '</td></tr>', ...
             '</table></html>'];
-        set(ui.main.entryBoxH(idx),'visible','on',...
-            'tooltipstring',tooltipstring);
+        set(ui.main.entryBoxH(idx), 'visible', 'on', ...
+            'tooltipstring', tooltipstring);
         
     case 'int8'
         % int8 are pointer variables.  Pointed to varID's are stored in
@@ -201,14 +201,14 @@ switch varStruct.Datatype
         % shift fctID up by 2 to match our indexing scheme, which is
         % that the first variable, TIME, has index of 1.
         fctID = finfo.Variables(varid+1).Attributes(3).Value+2;
-        msg = [finfo.Variables(varid+1).Name,' Fct_Ids:  ', ...
+        msg = [finfo.Variables(varid+1).Name, ' Fct_Ids:  ', ...
             num2str(fctID), '.'];
         SystemMsg(msg, 'Msg', ui);
         [variable, option] = ClearVariable('', idx, variable, option, ui);
         return
         
     otherwise
-        errMsg = ['Error: Variable ''',entryName, ...
+        errMsg = ['Error: Variable ''', entryName, ...
             ''' is not a valid datatype (single or int8)'];
         SystemMsg(errMsg, 'Error', ui);
         return
@@ -217,9 +217,9 @@ end %switch varDatatype
 %% Internal Functions
 
     function [variable, option] = ClearVariable(clearType, idx, variable, option, ui)
-        variable(idx) = ResetVarFields(idx,variable(idx),ui);
+        variable(idx) = ResetVarFields(idx, variable(idx), ui);
         varY0 = [variable.Y];
-        option.leadVar = find(~cellfun(@isempty,{varY0.name}), 1);
+        option.leadVar = find(~cellfun(@isempty, {varY0.name}), 1);
         if isempty(option.leadVar)
             set(ui.main.sliderH, 'enable', 'off');
         else
@@ -227,18 +227,18 @@ end %switch varDatatype
         end
         switch clearType
             case 'all'
-                set(ui.main.entryBoxH(idx),'string','');
+                set(ui.main.entryBoxH(idx), 'string', '');
         end
-        set(ui.main.entryBoxH(idx),'tooltipstring','');
+        set(ui.main.entryBoxH(idx), 'tooltipstring', '');
     end
 
-    function variable = ResetVarFields(idx,variable,ui)
+    function variable = ResetVarFields(idx, variable, ui)
         varFields = struct ( ...
             'name', {''}, ...
             'data', {[]}, ...
             'units', {''}, ...
             'label', {''}, ...
-            'size', {[NaN,NaN]}, ...
+            'size', {[NaN, NaN]}, ...
             'max', [], ...
             'min', [] ...
             );
@@ -247,14 +247,14 @@ end %switch varDatatype
         variable.T = varFields;
         variable.cdfName   = {''};
         variable.linePlotH = [];
-        set(ui.main.entryHelpH(idx),'visible','off');
+        set(ui.main.entryHelpH(idx), 'visible', 'off');
     end % ResetVarFields
 
-    function option = SetSliderValues(option,variable,ui)
+    function option = SetSliderValues(option, variable, ui)
         % Calculate 'Time' slider values
         varT=[variable.T];
         numericStep = 0.01; % seconds
-        if ~isempty(find([varT.name],1))
+        if ~isempty(find([varT.name], 1))
             option.slider.T.max = max([varT.max]-numericStep);
             option.slider.T.min = min([varT.min]+numericStep);
             stepSize = ...
@@ -266,23 +266,11 @@ end %switch varDatatype
         end
         option.slider.T.step = [stepSize 10*stepSize];% ratio from 0 to 1
         
-        switch variable(option.leadVar).X.name
-            case {'X','XB'}
-                numericStep = 0.01; %normalized
-            case 'MCINDX'
-                numericStep = 1/220; %normalized
-            case {'RMAJM','RMJSYM'}
-                numericStep = 1; %cm
-            case 'THETA'
-                numericStep = 0.0628; %rad
-            case {'ILDEN', 'ILIM', 'INTNC', 'IVISB'}
-                numericStep = 1;
-            case ''
-                % one-dimensional variables
-                numericStep = 0.01; % dimensionless
-        end
+        numericStep = NumericStepDictionary( ...
+            variable(option.leadVar).X.name);
+
         varX = variable.X;
-        if ~isempty(find([varX.name],1))
+        if ~isempty(find([varX.name], 1))
             option.slider.X.max = max([varX.max]-numericStep);
             option.slider.X.min = min([varX.min]+numericStep);
             stepSize = ...
@@ -308,19 +296,18 @@ end %switch varDatatype
                 newSlider = option.slider.X;
         end
         
-        option.slider.max   = newSlider.max;
-        option.slider.min   = newSlider.min;
-        option.slider.step  = newSlider.step;
+        option.slider.max   = double(newSlider.max);
+        option.slider.min   = double(newSlider.min);
+        option.slider.step  = double(newSlider.step);
         
         % adjust slider value if out of bounds
         option.slider.value = BoundSliderValue(option);
         
-        set(ui.main.sliderH                  ,...
-            'Max', option.slider.max         ,...
-            'Min', option.slider.min         ,...
-            'sliderStep',option.slider.step  ,...
-            'value',option.slider.value);
-        
+        set(ui.main.sliderH                  , ...
+            'Max', option.slider.max         , ...
+            'Min', option.slider.min         , ...
+            'SliderStep', option.slider.step  , ...
+            'value', option.slider.value);
     end % SetSliderValues
 
     function variable = interpolateData(dimNameX, variable)
@@ -337,7 +324,7 @@ end %switch varDatatype
         Y = variable.Y.data;
         
         switch dimNameX
-            case {'X','XB'}
+            case {'X', 'XB'}
                 interpMode = 'single';
                 Xgrid = 0.01:0.01:1;
             case 'MCINDX'
@@ -346,7 +333,7 @@ end %switch varDatatype
             case {'THETA'}
                 interpMode = 'single';
                 Xgrid = -3.14:0.0628:3.14;
-            case {'RMAJM','RMJSYM'}
+            case {'RMAJM', 'RMJSYM'}
                 interpMode = 'double';
                 Xmin  = round(min(min(variable.X.data))*10000)/10000;
                 Xmax  = round(max(max(variable.X.data))*10000)/10000;
@@ -364,29 +351,30 @@ end %switch varDatatype
         switch interpMode
             case 'time'
                 % one-dimensional variables
-                Yq = interp1(T,Y',Tgrid);
-                Yq = repmat(Yq,numel(Xgrid),1);
-                Xq = repmat(Xgrid',1,numel(Tgrid));
+                Yq = interp1(T, Y', Tgrid);
+                Yq = repmat(Yq, numel(Xgrid), 1);
+                Xq = repmat(Xgrid', 1, numel(Tgrid));
             case 'single'
                 % Easy interpolation - When Position Vectors are Const.
-                sizeX = numel(X(:,1));
-                Xq = repmat(Xgrid',1,numel(Tgrid));
-                sizeXq = numel(Xq(:,1));
-                Tq = repmat(Tgrid,sizeXq,1);
-                Tq0 = repmat(T,sizeX,1);
-                Yq = interp2(X',Tq0',Y',Xq',Tq','linear',NaN)';
+                sizeX = numel(X(:, 1));
+                Xq = repmat(Xgrid', 1, numel(Tgrid));
+                sizeXq = numel(Xq(:, 1));
+                Tq = repmat(Tgrid, sizeXq, 1);
+                Tq0 = repmat(T, sizeX, 1);
+                Yq = interp2(X', Tq0', Y', Xq', Tq', 'linear', NaN)';
             case 'double'
                 % double interpolation - when position vector vary
-                sizeX = numel(X(:,1));
-                Tq0 = repmat(T(1,:),sizeX,1);
-                Xq0 = single(repmat(Xgrid',1,numel(Tq0(1,:))));
-                for j=1:numel(T(1,:))
-                    Yq0(:,j) = interp1(X(:,j),Y(:,j)',Xq0(:,j)); %#ok<AGROW>
+                sizeX = numel(X(:, 1));
+                Tq0 = repmat(T(1, :), sizeX, 1);
+                Xq0 = single(repmat(Xgrid', 1, numel(Tq0(1, :))));
+                for j=1:numel(T(1, :))
+                    Yq0(:, j) = interp1( ...
+                        X(:, j), Y(:, j)', Xq0(:, j)); %#ok<AGROW>
                 end
-                Xq = interp1(Tq0(1,:),Xq0',Tgrid,'linear','extrap')';
-                T1 = single(repmat(T,numel(Xq0(:,1)),1));
-                Tq = single(repmat(Tgrid,numel(Xq(:,1)),1));
-                Yq = interp2(Xq0',T1',Yq0',Xq',Tq','linear',NaN)';
+                Xq = interp1(Tq0(1, :), Xq0', Tgrid, 'linear', 'extrap')';
+                T1 = single(repmat(T, numel(Xq0(:, 1)), 1));
+                Tq = single(repmat(Tgrid, numel(Xq(:, 1)), 1));
+                Yq = interp2(Xq0', T1', Yq0', Xq', Tq', 'linear', NaN)';
         end
         
         variable.T.data = Tgrid;
@@ -399,7 +387,8 @@ end %switch varDatatype
         variable.X.min  = min(min(variable.X.data));
         variable.Y.size = size(Yq);
         variable.Y.data = ...
-            [nan(numel(Yq(:,1)),1),Yq(:,2:end-1),nan(numel(Yq(:,1)),1)];
+            [nan(numel(Yq(:, 1)), 1), Yq(:, 2:end-1), ...
+            nan(numel(Yq(:, 1)), 1)];
     end
 
 end

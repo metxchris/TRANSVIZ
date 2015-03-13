@@ -1,4 +1,4 @@
-function ResizeFigure(~, ~, ui, option)
+function ResizeFigure(ui, option)
 % Figure initial size/resize function
 % Adjust object positions so that they maintain appropriate proportions
 if option.testMode>0
@@ -41,14 +41,14 @@ end
 set(ui.main.activeCdfH, 'Position', [fP(3)-125, h(1)-gS, 105, 16]);
 set(ui.main.sliderH, 'Position', [70, 11, fP(3)-210, 21]);
 set(ui.main.splashH, 'Position', [70, 84, fP(3)-215, fP(4)-125]);
-set(ui.main.sliderModeH, 'Position', [fP(3)-125, h(3)-14, 100, 16]);
-set(ui.main.sliderModeB(1), 'Position', [6 -8 50 22]);
-set(ui.main.sliderModeB(2), 'Position', [57 -8 50 22]);
+set(ui.main.sliderModeH, 'Position', [fP(3)-125, h(3)-24, 110, 26]);
+set(ui.main.sliderModeB(1), 'Position', [6 2 50 22]);
+set(ui.main.sliderModeB(2), 'Position', [57 2 50 22]);
 set(ui.main.systemMsgH, 'Position', [0,fP(4)-15, fP(3)+2, 16]);
 
 aP=get(ui.main.axesH, 'position');
 if ishandle(ui.main.plotTimeH)
-    set(ui.main.plotTimeH,'Position',[aP(3), aP(4)+12]);
+    set(ui.main.plotTimeH,'Position',[aP(3), aP(4)+8]);
 end
 
 end

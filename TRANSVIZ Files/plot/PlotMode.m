@@ -17,9 +17,9 @@ switch option.plotMode
         for j = 1:numel(variable)
             if ~isempty(variable(j).Y.name)
                 set(ui.main.entryHelpH(j), 'visible', 'on');
-                jButton = findjobj(ui.main.entryHelpH(j));
-                jButton.Border = [];
-                jButton.repaint;
+%                 jButton = findjobj(ui.main.entryHelpH(j));
+%                 jButton.Border = [];
+%                 jButton.repaint;
             end
         end
         set(ui.main.entryBoxH(2:end), 'visible', 'on');

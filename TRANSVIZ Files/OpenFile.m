@@ -3,8 +3,7 @@ if option.testMode>0
     disp('OpenFile.m called');
 end;
 % Select CDF to load
-
-if evt
+if isnumeric(evt)
     filePath = src;
     splitPath = strsplit(filePath,'\');
     tempName = splitPath{end};
@@ -58,6 +57,7 @@ if ~cdf(idx).ncid
 end
 
 if strcmp(get(ui.main.splashH,'visible'), 'on')
+    % enable main functionalities after loading first CDF.
     set(ui.main.splashH,'visible','off');
     set(ui.main.entryBoxH(:),'enable','on');
     set(ui.main.axesH,'visible','on');
@@ -72,8 +72,18 @@ if strcmp(get(ui.main.splashH,'visible'), 'on')
     set(ui.menu.exportFigureMH,'enable','on'); 
     set(ui.main.entryLabelH(:),'enable','on'); 
     set(ui.main.textHeaderH(:),'enable','on'); 
-    
 end
+
+% % Not working yet R2014b
+% jMenu = findjobj(ui.main.activeCdfH)
+% jMenu.maximumSize
+% for k = 1:numel(jMenu)
+%     jMenu(k)
+%     try
+%         jMenu(k).setMaximumRowCount(5);
+%         break
+%     end
+% end
 
 try
     date = strsplit( ...

@@ -1,16 +1,12 @@
 function TRANSVIZ(varargin)
-%% Internal Functions
-% ui = InitializeUI(option)
+%% MATLAB R2014b conversion
 
 %% About TRANSVIZ
 % TRANSVIZ v2.01, by Christopher Wilson (cwils16@u.rochester.edu)
 % Please email me about any bugs.
 
 %% Planned Minor Updates
-% make variable list window reopen in same spot if already open
-% add surface plots
 % enable plotting for pointer variables (int8)
-% Add CDF info to varlist window -- and possible export list option
 
 %% Additional Potential Updates
 % freeze line feature - displays grayscale copy of current plot in the
@@ -42,36 +38,8 @@ else
 end
 
 [cdf, variable, option] = InitializeStructs(testMode);
-ui = InitializeUI(option); % InitializeUI is an internal function
-
-% remove '+' button borders, then hide the button; set hover cursor.
-for k = 1:numel(ui.main.entryHelpH)
-    jButton = findjobj(ui.main.entryHelpH(k));
-    jButton.setCursor(java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-    jButton.Border = [];
-    jButton.repaint;
-    set(ui.main.entryHelpH(k), 'visible', 'off');
-end
-
-% sets hover cursor for slider and slider mode buttons
-jButton = findjobj(ui.main.sliderModeB(1));
-jButton.setCursor(java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-jButton = findjobj(ui.main.sliderModeB(2));
-jButton.setCursor(java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-jButton = findjobj(ui.main.sliderH);
-jButton.setCursor(java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-
-% limits popupmenu entries, set hover cursor
-jMenu = findjobj(ui.main.activeCdfH);
-jMenu.setCursor(java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-jMenu.setMaximumRowCount(5);
-
-% Set Splash Screen
-if ~option.testMode || isempty(cdfPath)
-    SplashMsg(ui); %Set splash screen text
-else
-    [cdf, option] = OpenFile(cdfPath, 1, ui, cdf, option);
-end
+ui = BuildUI(option,variable);
+SetCallbacks(ui);
 
 % set initial menu options
 plotOptionsCB(ui.menu.plotModeH(1)) % Line Plot
@@ -88,21 +56,31 @@ plotOptionsCB(ui.menu.legendLocationH(1)) % NorthEast
 % set additional line plot options
 for k =1:numel(variable)
     lineOptionsCB(ui.line(k).colorH(k)) % 1 (Blue) through 6 (Red)
-    lineOptionsCB(ui.line(k).styleH(mod(k+1,2)+1)); % '-', '-.'
-    lineOptionsCB(ui.line(k).thickH(7)); % 2.50
+    lineOptionsCB(ui.line(k).styleH(mod(k-1,3)+1)); % '-', '-.'
     lineOptionsCB(ui.line(k).markerH(13)) % None
     lineOptionsCB(ui.line(k).sizeH(3)) % 6
     lineOptionsCB(ui.line(k).fillH(12)) % None
+    if k<4
+        lineOptionsCB(ui.line(k).thickH(7)); % 2.50
+    else
+        lineOptionsCB(ui.line(k).thickH(6)); % 2.00
+    end
 end
 
+% Set Splash Screen
+if ~option.testMode || isempty(cdfPath)
+    SplashMsg(ui); %Set splash screen text
+else
+    [cdf, option] = OpenFile(cdfPath, 1, ui, cdf, option);
+end
+
+ResizeFigure(ui, option);
 debugCB(); %exports data to workspace when testMode enabled
 
-    function ui = InitializeUI(option)
-        % Build user interface
-        ui = BuildUI(option,variable);
+    function SetCallbacks(ui)
         % Set main callbacks
         set(ui.main.figH, ...
-            'ResizeFcn', {@ResizeFigure, ui, option},...
+            'ResizeFcn', {@ResizeCB},...
             'CloseRequestFcn', @ShutDown);
         set(ui.main.activeCdfH, 'Callback', @activeCdfCB);
         set(ui.main.entryBoxH(:), 'callback', @entryLoadCB);
@@ -137,17 +115,28 @@ debugCB(); %exports data to workspace when testMode enabled
         set(ui.menu.pointerListH, 'Callback', @openPointerListCB);
         set(ui.menu.consoleMH, 'Callback', @openConsoleCB);
         % slider listener
-        % allows slider to update plot while actively being dragged,
-        % this also serves as the sliderH callback function.
-        sliderListener = ...
-            handle.listener(ui.main.sliderH, 'ActionEvent', @sliderCB);
-        setappdata(ui.main.sliderH, 'listeners', sliderListener);
+        addlistener(ui.main.sliderH,'ContinuousValueChange',@sliderCB);
     end
 
+for k = 1:numel(ui.main.entryHelpH)
+    HandHoverCursor(ui.main.entryHelpH(k))    
+    set(ui.main.entryHelpH(k), 'visible', 'off');
+end
+
 %% Callbacks
+    function ResizeCB(varargin)
+        ResizeFigure(ui, option);
+    end
+
     function sliderModeCB(varargin)
         % switches slider mode between time and position
         handle = varargin{1}; % Get calling handle
+        if isa(handle, 'matlab.ui.container.ButtonGroup')
+            % cancel call for the button group.
+            % why does R2014b call with the button group and the button as
+            % well? R2013a didn't do this.
+            return
+        end
         option = SliderMode(handle, variable, option, ui);
         [variable, ui] = UpdateDisplay(variable, option, ui);
         debugCB();
@@ -167,7 +156,9 @@ debugCB(); %exports data to workspace when testMode enabled
         [ui, option] = ActiveCDF(ui, cdf, option);
         if ~isempty(findobj('type', 'figure', 'name', 'Variable List'))
             openVarListCB() % reload var list to reflect new cdf
-            openPointerListCB() % reload var list to reflect new cdf
+        end
+        if ~isempty(findobj('type', 'figure', 'name', 'Pointer List'))
+            openVarListCB() % reload var list to reflect new cdf
         end
         debugCB();
     end
@@ -299,7 +290,7 @@ debugCB(); %exports data to workspace when testMode enabled
     function commandBoxCB(src,~)
         % handles console window command box entries
         commandStr=strrep(get(src, 'string'), '>> ', '');
-        ui = CommandBox(commandStr, ui);
+        ui = CommandBox(commandStr, cdf, variable, option, ui);
         debugCB();
     end
 

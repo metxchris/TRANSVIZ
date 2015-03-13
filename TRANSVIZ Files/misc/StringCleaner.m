@@ -40,6 +40,9 @@ if strcmp(inputType,'Units')
         inputString = strrep(inputString, 'Pascals', 'Pa') ;
         inputString = strrep(inputString, 'ARBITRARY UNITS', 'Arb. Units') ;
         inputString = strrep(inputString, 'N/', '#/') ;
+        inputString = strrep(inputString, '-1', '{-1}') ;
+        inputString = strrep(inputString, '-2', '{-2}') ;
+        inputString = strrep(inputString, '-3', '{-3}') ;
         outputString = [' [',inputString,']'];
     else outputString = ''; % needed to avoid errors
     end

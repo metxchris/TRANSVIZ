@@ -62,9 +62,8 @@ switch option.plotMode
             % data is collected backwards from the plot, so we save it in
             % backwards order to here.
             lineName{j} = strrep(lineName{j}, ...
-                '\color[rgb]{0.4 0.4 0.4}', '');
-            dispName = strsplit(lineName{j},'  ');
-            fprintf(fileID,'\n%20s,%3s,',dispName{2},'x');
+                '\color[rgb]{0.5 0.5 0.5}', '');
+            fprintf(fileID,'\n%20s,%3s,',lineName{j},'x');
             fprintf(fileID,'%12.3f,',xData{j}(2:end-1));
             fprintf(fileID,'\n%20s,%3s,',' ','y');
             fprintf(fileID,'%12.3e,',yData{j}(2:end-1));

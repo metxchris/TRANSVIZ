@@ -26,10 +26,13 @@ set(ui.main.systemMsgH, ...
     );
 
 % Add border (non-standard MATLAB technique using findjobj)
-jEdit = findjobj(ui.main.systemMsgH);
-lineColor = java.awt.Color(255/255,215/255,0/255);
-thickness = 1;
-jEdit.Border = javax.swing.border.LineBorder(lineColor,thickness);
-jEdit.repaint;
+try
+    % fails during testMode, due to changes in R2014b.
+    jEdit = findjobj(ui.main.systemMsgH);
+    lineColor = java.awt.Color(255/255,215/255,0/255);
+    thickness = 1;
+    jEdit.Border = javax.swing.border.LineBorder(lineColor,thickness);
+    jEdit.repaint;
+end
 
 end %systemMsgF
