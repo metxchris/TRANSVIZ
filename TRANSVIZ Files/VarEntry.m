@@ -18,10 +18,8 @@ else
     idx = str2double(get(src,'tag'));
 end
 
-option.entryBoxNumber = idx;
-
 % clear systemMsg
-SystemMsg('', '', ui, option);
+SystemMsg('', '', ui);
 
 % resets the corresponding variable data for blank entries
 if isempty(entryName)
@@ -42,7 +40,7 @@ if all(ismember(entryName, '0123456789'))
         errMsg = ['Error: Variable corresponding to ID number ', ...
             num2str(varID+1), ' not found in ', ...
             option.cdfList{option.activeCdfIdx},'.CDF'];
-        SystemMsg(errMsg, 'Warning', ui, option);
+        SystemMsg(errMsg, 'Warning', ui);
         return
     end
 end
@@ -55,7 +53,7 @@ varMatch = sum(varStrcmp);
 if ~varMatch
     errMsg = ['Error: Variable ''',entryName,''' not found in ', ...
         cdf(option.activeCdfIdx).name];
-    SystemMsg(errMsg,'Error',ui,option);
+    SystemMsg(errMsg, 'Error', ui);
     return
 end
 
@@ -106,7 +104,7 @@ switch varStruct.Datatype
             errMsg = ['Error: Variable ',variable(idx).Y.name, ...
                 ' with x-axis dimension ', dimNameX, ...
                 ' does not have a defined interpolation grid.'];
-            SystemMsg(errMsg,'Error',ui,option);
+            SystemMsg(errMsg, 'Error', ui);
             [variable, option] = ClearVariable('', idx, variable, option, ui);
             % recalc slider values
             option = SetSliderValues(option,variable,ui);
@@ -205,14 +203,14 @@ switch varStruct.Datatype
         fctID = finfo.Variables(varid+1).Attributes(3).Value+2;
         msg = [finfo.Variables(varid+1).Name,' Fct_Ids:  ', ...
             num2str(fctID), '.'];
-        SystemMsg(msg, 'Msg', ui, option);
+        SystemMsg(msg, 'Msg', ui);
         [variable, option] = ClearVariable('', idx, variable, option, ui);
         return
         
     otherwise
         errMsg = ['Error: Variable ''',entryName, ...
             ''' is not a valid datatype (single or int8)'];
-        SystemMsg(errMsg, 'Error', ui, option);
+        SystemMsg(errMsg, 'Error', ui);
         return
 end %switch varDatatype
 
@@ -248,7 +246,7 @@ end %switch varDatatype
         variable.X = varFields;
         variable.T = varFields;
         variable.cdfName   = {''};
-        variable.linePlotH = {[]};
+        variable.linePlotH = [];
         set(ui.main.entryHelpH(idx),'visible','off');
     end % ResetVarFields
 

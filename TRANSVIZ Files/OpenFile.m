@@ -17,17 +17,17 @@ else
 end
 
 if ~tempName
-    SystemMsg('Error Reading CDF','Msg',ui,option);
+    SystemMsg('Error Reading CDF. No file name detected.', 'Error', ui);
     return
 end
 
-SystemMsg('Loading CDF ...','Msg',ui,option);
+SystemMsg('Loading CDF ...', 'Msg', ui);
 runID = strrep(tempName,'.CDF','');
 
 
 % check for duplicate cdfs
 if max(strcmp(runID,option.cdfList))
-    SystemMsg('Stopping File Load... CDF Already Loaded!','Msg',ui,option);
+    SystemMsg('Stopping File Load... CDF Already Loaded!', 'Msg', ui);
     return
 end
 
@@ -53,7 +53,7 @@ dimid = netcdf.inqDimID(cdf(idx).ncid, 'X');
 [~, cdf(idx).zones] = netcdf.inqDim(cdf(idx).ncid, dimid);
 
 if ~cdf(idx).ncid
-    SystemMsg('Read Error: Cannot read CDF ncid', 'Msg', ui, option);
+    SystemMsg('Read Error: Cannot read CDF ncid', 'Msg', ui);
     return
 end
 
@@ -80,13 +80,13 @@ try
         netcdf.getAtt(cdf(idx).ncid,cdf(idx).varid,'CDF_date'),' ');
     cdf(idx).date =date{1};
     set(ui.main.activeCdfH,'value',idx);
-    SystemMsg(['File ',tempName,' successfully loaded'],'Msg',ui,option);
+    SystemMsg(['File ',tempName,' successfully loaded'], 'Msg', ui);
 catch err
     % This error will likely occur if the cdf data structure is
     % different from that used for DIII-D or NSTX files.
     errMsg = ['Error: Failed to load file',tempName, ...
         '. Please check that this is a valid .CDF file.'];
-    SystemMsg(errMsg,'Error',ui,option);
+    SystemMsg(errMsg, 'Error', ui);
     getReport(err, 'extended')
 end
 

@@ -5,13 +5,8 @@ if option.testMode
     disp('UpdateDisplay.m called');
 end
 
-% no data updating if errors exist
-if option.errorLevel == 1
-    return;
-end
-
 if isempty(option.leadVar)
-    % clear the interface if no variables loaded.
+    % clear the interface if no variables loaded and skip plotting.
     cla reset;
     return
 end

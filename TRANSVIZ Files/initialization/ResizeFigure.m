@@ -1,4 +1,4 @@
-function ResizeFigure(ui,option)
+function ResizeFigure(~, ~, ui, option)
 % Figure initial size/resize function
 % Adjust object positions so that they maintain appropriate proportions
 if option.testMode>0

@@ -1,5 +1,5 @@
 function [ui, option] = PlotTools(handle, ui, option)
-SystemMsg('', '', ui, option); % clear systemMsg
+SystemMsg('', '', ui); % clear systemMsg
 source = get(handle);
 sourceLabel = strrep(source.Label, '&', '');
 currentState = source.Checked;

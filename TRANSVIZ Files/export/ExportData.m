@@ -1,5 +1,5 @@
 function ExportData(variable, option, ui)
-SystemMsg('', '', ui, option); % clear systemMsg
+SystemMsg('', '', ui); % clear systemMsg
 
 % user sets fileName, pathName
 [fileName, pathName, ~] = uiputfile( ...
@@ -16,7 +16,7 @@ if fileID < 0
     SystemMsg(['Export Failed:  Unable to open ', ...
         pathName, fileName, ...
         ' for writing.  Make sure this file is not open.'], ...
-        'Warning', ui, option);
+        'Warning', ui);
     return
 end
 
@@ -25,7 +25,7 @@ switch option.plotMode
         lineData = findobj(ui.main.axesH, 'Type', 'line');
         if isempty(lineData)
             SystemMsg('Error:  No data plotted. Export canceled.',...
-                'Warning', ui, option);
+                'Warning', ui);
             return
         end
         xData = get(lineData,'Xdata');
@@ -73,7 +73,7 @@ switch option.plotMode
         surfaceH=findobj(ui.main.axesH, 'type', 'surface');
         if isempty(surfaceH)
             SystemMsg('Error:  No data plotted. Export canceled.',...
-                'Warning', ui, option);
+                'Warning', ui);
             return
         end
         xData = num2cell(get(surfaceH, 'xd'));
@@ -105,10 +105,10 @@ fclose(fileID);
 % check if file has been created and report status
 if exist([pathName,fileName],'file')
     SystemMsg(['Export Successful:  Data saved to ', ...
-        pathName,fileName],'Msg', ui, option);
+        pathName,fileName],'Msg', ui);
 else
     SystemMsg(['Export Failed:  File ', pathName, fileName, ...
-        ' has not been saved.'],'Warning', ui, option);
+        ' has not been saved.'],'Warning', ui);
 end
 
 end

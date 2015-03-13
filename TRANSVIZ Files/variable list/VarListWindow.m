@@ -201,8 +201,6 @@ switch dataType
         end
 end
 
-
-
     function buttonEdit(handle)
         jButton = java(findjobj(handle));
         jButton.setCursor(java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));

@@ -1,5 +1,5 @@
 function ExportFigure(option, ui)
-SystemMsg('', '', ui, option); % clear systemMsg
+SystemMsg('', '', ui); % clear systemMsg
 
 % user sets fileName, pathName
 [fileName, pathName, ~] = uiputfile( ...
@@ -21,18 +21,19 @@ try
                 [pathName, fileName]);
     end
 catch
-    SystemMsg('Export Error: Unknown error occured when exporting figure.', ...
-        'Warning', ui, option);
+    SystemMsg(...
+        'Export Error: Unknown error occured when exporting figure.', ...
+        'Warning', ui);
 end
 SetBackgroundColor(ui, 'gray');
 
 % check if file has been created and report status
 if exist([pathName,fileName],'file')
     SystemMsg(['Export Successful:  Figure saved to ', ...
-        pathName,fileName],'Msg', ui, option);
+        pathName,fileName],'Msg', ui);
 else
     SystemMsg(['Export Failed:  File ', pathName, fileName, ...
-        ' has not been saved.'],'Warning', ui, option);
+        ' has not been saved.'],'Warning', ui);
 end
 
 

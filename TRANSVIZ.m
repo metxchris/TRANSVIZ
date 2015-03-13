@@ -44,16 +44,26 @@ end
 [cdf, variable, option] = InitializeStructs(testMode);
 ui = InitializeUI(option); % InitializeUI is an internal function
 
-% remove '+' button borders, then hide the button.
+% remove '+' button borders, then hide the button; set hover cursor.
 for k = 1:numel(ui.main.entryHelpH)
     jButton = findjobj(ui.main.entryHelpH(k));
+    jButton.setCursor(java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
     jButton.Border = [];
     jButton.repaint;
     set(ui.main.entryHelpH(k), 'visible', 'off');
 end
 
-% limits popupmenu entries
+% sets hover cursor for slider and slider mode buttons
+jButton = findjobj(ui.main.sliderModeB(1));
+jButton.setCursor(java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+jButton = findjobj(ui.main.sliderModeB(2));
+jButton.setCursor(java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+jButton = findjobj(ui.main.sliderH);
+jButton.setCursor(java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+
+% limits popupmenu entries, set hover cursor
 jMenu = findjobj(ui.main.activeCdfH);
+jMenu.setCursor(java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
 jMenu.setMaximumRowCount(5);
 
 % Set Splash Screen
@@ -77,18 +87,13 @@ plotOptionsCB(ui.menu.lineGridH(2)) % Off
 plotOptionsCB(ui.menu.legendLocationH(1)) % NorthEast
 % set additional line plot options
 for k =1:numel(variable)
-    lineOptionsCB(ui.line(k).colorH(k))
-    lineOptionsCB(ui.line(k).styleH(mod(k+1,2)+1));
-    lineOptionsCB(ui.line(k).markerH(13))
-    lineOptionsCB(ui.line(k).sizeH(3))
-    lineOptionsCB(ui.line(k).fillH(12))
+    lineOptionsCB(ui.line(k).colorH(k)) % 1 (Blue) through 6 (Red)
+    lineOptionsCB(ui.line(k).styleH(mod(k+1,2)+1)); % '-', '-.'
+    lineOptionsCB(ui.line(k).thickH(7)); % 2.50
+    lineOptionsCB(ui.line(k).markerH(13)) % None
+    lineOptionsCB(ui.line(k).sizeH(3)) % 6
+    lineOptionsCB(ui.line(k).fillH(12)) % None
 end
-lineOptionsCB(ui.line(1).thickH(7));
-lineOptionsCB(ui.line(2).thickH(7));
-lineOptionsCB(ui.line(3).thickH(6));
-lineOptionsCB(ui.line(4).thickH(6));
-lineOptionsCB(ui.line(5).thickH(5));
-lineOptionsCB(ui.line(6).thickH(5));
 
 debugCB(); %exports data to workspace when testMode enabled
 
@@ -96,8 +101,9 @@ debugCB(); %exports data to workspace when testMode enabled
         % Build user interface
         ui = BuildUI(option,variable);
         % Set main callbacks
-        set(ui.main.figH, 'ResizeFcn', @resizeCB,...
-            'CloseRequestFcn', @shutDownCB);
+        set(ui.main.figH, ...
+            'ResizeFcn', {@ResizeFigure, ui, option},...
+            'CloseRequestFcn', @ShutDown);
         set(ui.main.activeCdfH, 'Callback', @activeCdfCB);
         set(ui.main.entryBoxH(:), 'callback', @entryLoadCB);
         set(ui.main.entryHelpH(:), 'callback', @entryOptionsCB);
@@ -145,11 +151,6 @@ debugCB(); %exports data to workspace when testMode enabled
         option = SliderMode(handle, variable, option, ui);
         [variable, ui] = UpdateDisplay(variable, option, ui);
         debugCB();
-    end
-
-    function resizeCB(varargin)
-        % resizes main window
-        ResizeFigure(ui, option);
     end
 
     function openFileCB(src,evt)
@@ -200,8 +201,9 @@ debugCB(); %exports data to workspace when testMode enabled
     function openVarListCB(varargin)
         % cancel call if no CDF is loaded
         if isempty(option.activeCdfIdx)
-            SystemMsg('Error:  Open a CDF before loading variable list.',...
-                'Warning', ui, option);
+            SystemMsg(...
+                'Error:  Open a CDF before loading variable list.',...
+                'Warning', ui);
             return
         end
         % build variable list window
@@ -221,7 +223,7 @@ debugCB(); %exports data to workspace when testMode enabled
         % cancel call if no CDF is loaded
         if isempty(option.activeCdfIdx)
             SystemMsg('Error:  Open a CDF before loading pointer list.',...
-                'Warning', ui, option);
+                'Warning', ui);
             return
         end
         % build variable list window
@@ -302,7 +304,7 @@ debugCB(); %exports data to workspace when testMode enabled
     end
 
     function plotOptionsCB(varargin)
-         [variable, ui, option] = PlotOptions(varargin{1}, variable, option, ui);
+        [variable, ui, option] = PlotOptions(varargin{1}, variable, option, ui);
         debugCB();
     end
 
@@ -322,37 +324,20 @@ debugCB(); %exports data to workspace when testMode enabled
         % context menu auto-hides afterwards.
     end
 
-
-
     function plotToolsCB(varargin)
         [ui, option] = PlotTools(varargin{1}, ui, option);
         debugCB();
     end
 
     function lineOptionsCB(varargin)
-        
-        
         variable =  LineOptions(varargin{1}, variable, ui);
-        debugCB();
-        
-        
+        debugCB(); 
     end
 
     function debugCB(varargin)
         % exports structs to MATLAB workspace for debugging purposes
         if option.testMode
             putvar(cdf, variable, option, ui);
-        end
-    end
-
-    function shutDownCB(varargin)
-        % Close all related windows
-        figureList = {'Console', 'Variable List', ...
-            'Pointer List', 'TRANSVIZ'};
-        for j = 1:numel(figureList)
-            if ~isempty(findobj('type', 'figure', 'name', figureList{j}))
-                delete(findobj('type', 'figure', 'name', figureList{j}));
-            end
         end
     end
 

@@ -50,7 +50,7 @@ for j = option.leadVar:numel(variable)
         end
         varName = strrep(variable(j).Y.name, '_', '\_');
         displayName = [' ', varName, ...
-            '\color[rgb]{0.4 0.4 0.4} (', variable(j).cdfName, ')'];
+            '\color[rgb]{0.5 0.5 0.5} (', variable(j).cdfName, ')'];
         variable(j).linePlotH = plot(ui.main.axesH, ...
             varX, varY, ...
             'DisplayName', displayName, ...
@@ -97,10 +97,10 @@ set(ui.main.axesH, ...
 % generate plot labels
 ylabel(ui.main.axesH, ...
     [variable(option.leadVar).Y.label, variable(option.leadVar).Y.units], ...
-    'FontSize', 12, 'buttonDownFcn', @editFigureLabelCB);
+    'FontSize', 12);
 xlabel(ui.main.axesH, ...
     [varStructX(option.leadVar).label, varStructX(option.leadVar).units], ...
-    'FontSize', 12, 'buttonDownFcn', @editFigureLabelCB);
+    'FontSize', 12);
 % why is xlabel different form than ylabel?
 % ans: because varStructX depends on if slider is Time or Pos mode
 
@@ -120,14 +120,15 @@ legendshrink(0.6, 'best'); % shrink legend lines
 % % % Random MATLAB bug: OpenGL fails for data values of magnitude >= 10^22
 if strcmp(get(ui.main.figH, 'renderer'), 'OpenGL') && (maxY >= 10^(22) || (minY < -10^(22)))
     set(ui.main.figH, 'renderer', 'painters')
-    SystemMsg('OpenGL fails for magnitudes of 10^22 or greater, switching renderer to Painters.', 'Msg', ui, option);
-% %     for j=1:numel(ui.main.rendererH)
-% %         set(ui.main.rendererH{j}, 'checked', 'off');
-% %     end
-% %     set(ui.main.rendererH{3}, 'Checked', 'on');
+    SystemMsg(...
+        'OpenGL fails for large magnitudes, switching renderer to Painters.', ...
+        'Msg', ui);
+    [variable, ui, ~] = PlotOptions(ui.menu.rendererH(1), ...
+        variable, option, ui); 
+    % we dont need to save option when switching renderer
 end
 
-ResizeFigure(ui, option); %hacky type of fix - don't remember what for though.
+ResizeFigure(0, 0, ui, option); %hacky type of fix - don't remember what for though.
 
     function linePlotCB(varargin)
     

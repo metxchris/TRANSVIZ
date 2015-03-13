@@ -1,24 +1,21 @@
-function errorLevel = SystemMsg(inputMsg, inputType, ui, option)
+function SystemMsg(inputMsg, inputType, ui)
 % Displays a message on the main gui above the axes
-if isempty(inputMsg) && ~option.errorLevel
+if isempty(inputMsg)
     set(ui.main.systemMsgH, 'visible', 'off');
     return
 end
 
-% I might not be using errorLevel anymore - (chris 03/08/15)
-errorLevel      = option.errorLevel;
 backgroundColor = [255, 255, 224]./255; %light yellow
 
 switch inputType
     case 'Error'
-        errorLevel = 1;
-        foregroundColor = [0.933 0.180 0.184]; %red
+        foregroundColor = ColorDictionary('Red');
         
     case 'Warning'
-        foregroundColor = [0.933 0.180 0.184]; %red
+        foregroundColor = ColorDictionary('Red');
         
     case 'Msg'
-        foregroundColor = [0 0.4 0]; %dark green   
+        foregroundColor = ColorDictionary('Dark Green');  
 end
 
 set(ui.main.systemMsgH, ...

@@ -1,14 +1,13 @@
 function option = PlotMode(handle, variable, option, ui)
 
 source = get(handle);
-plotMode = strrep(source.Label, '&', '');
-option.plotMode = plotMode;
+option.plotMode = strrep(source.Label, '&', '');
 
 lineMenuHandles = [ui.menu.legendLocationMH, ui.menu.lineGridMH, ...
     ui.menu.lineBoxMH];
 surfMenuHandles = [ui.menu.colorMapMH, ui.menu.surfaceGridMH, ...
     ui.menu.surfaceBoxMH, ui.menu.surfaceStyleMH];
-cla;
+cla; % clear axis
 switch option.plotMode
     case 'Line Plot'
         set(ui.main.sliderH, 'visible', 'on');

@@ -1,6 +1,6 @@
 function [variable, ui, option] = PlotOptions(handle, variable, option, ui)
 
-SystemMsg('', '', ui, option); % clear systemMsg
+SystemMsg('', '', ui); % clear systemMsg
 
 source = get(handle);
 sourceLabel = strrep(source.Label, '&', '');
@@ -12,7 +12,7 @@ switch parentName
                 strcmp(sourceLabel, 'Painters');
             SystemMsg(...
                 'Warning: Surface plotting using painters is extremely slow.', ...
-                'Warning', ui, option)
+                'Warning', ui)
             try
                 set(ui.main.rotate3dH, 'RotateStyle', 'orbit');
             end
