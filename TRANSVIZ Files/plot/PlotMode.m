@@ -4,7 +4,7 @@ source = get(handle);
 option.plotMode = strrep(source.Label, '&', '');
 
 lineMenuHandles = [ui.menu.legendLocationMH, ui.menu.lineGridMH, ...
-    ui.menu.lineBoxMH];
+    ui.menu.lineBoxMH, ui.menu.lineTransparencyMH];
 surfMenuHandles = [ui.menu.colorMapMH, ui.menu.surfaceGridMH, ...
     ui.menu.surfaceBoxMH, ui.menu.surfaceStyleMH];
 cla; % clear axis
@@ -17,9 +17,6 @@ switch option.plotMode
         for j = 1:numel(variable)
             if ~isempty(variable(j).Y.name)
                 set(ui.main.entryHelpH(j), 'visible', 'on');
-%                 jButton = findjobj(ui.main.entryHelpH(j));
-%                 jButton.Border = [];
-%                 jButton.repaint;
             end
         end
         set(ui.main.entryBoxH(2:end), 'visible', 'on');
@@ -27,7 +24,6 @@ switch option.plotMode
         set(ui.main.sliderModeB(:), 'visible', 'on');
         set(ui.main.textHeaderH(3), 'visible', 'on');
         set(ui.main.sliderModeH, 'visible', 'on');
-        
         try
             set(ui.main.rotate3dH,'enable','off');
         end

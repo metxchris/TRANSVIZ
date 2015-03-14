@@ -1,12 +1,8 @@
 function TRANSVIZ(varargin)
-%% MATLAB R2014b conversion
-
 %% About TRANSVIZ
-% TRANSVIZ v2.01, by Christopher Wilson (cwils16@u.rochester.edu)
+% TRANSVIZ v2.04, by Christopher Wilson (cwils16@u.rochester.edu)
+% Compatible with Matlab versions R2014+
 % Please email me about any bugs.
-
-%% Planned Minor Updates
-% enable plotting for pointer variables (int8)
 
 %% Additional Potential Updates
 % freeze line feature - displays grayscale copy of current plot in the
@@ -38,7 +34,7 @@ else
 end
 
 [cdf, variable, option] = InitializeStructs(testMode);
-ui = BuildUI(option,variable);
+ui = BuildUI(option, variable);
 SetCallbacks(ui);
 
 % set initial menu options
@@ -53,10 +49,11 @@ plotOptionsCB(ui.menu.colorMapH(1)) % Jet
 plotOptionsCB(ui.menu.lineBoxH(1)) % On
 plotOptionsCB(ui.menu.lineGridH(2)) % Off
 plotOptionsCB(ui.menu.legendLocationH(1)) % NorthEast
+plotOptionsCB(ui.menu.lineTransparencyH(1)) % 1.00
 % set additional line plot options
 for k =1:numel(variable)
     lineOptionsCB(ui.line(k).colorH(k)) % 1 (Blue) through 6 (Red)
-    lineOptionsCB(ui.line(k).styleH(mod(k-1,3)+1)); % '-', '-.'
+    lineOptionsCB(ui.line(k).styleH(mod(k-1, 3)+1)); % '-', '-.'
     lineOptionsCB(ui.line(k).markerH(13)) % None
     lineOptionsCB(ui.line(k).sizeH(3)) % 6
     lineOptionsCB(ui.line(k).fillH(12)) % None
@@ -75,18 +72,25 @@ else
 end
 
 ResizeFigure(ui, option);
+% set '+' button cursor, also removes border
+for k = 1:numel(ui.main.entryHelpH)
+    HandHoverCursor(ui.main.entryHelpH(k))    
+    set(ui.main.entryHelpH(k), 'visible', 'off');
+end
 debugCB(); %exports data to workspace when testMode enabled
+
+%% Callbacks
 
     function SetCallbacks(ui)
         % Set main callbacks
         set(ui.main.figH, ...
-            'ResizeFcn', {@ResizeCB},...
+            'ResizeFcn', {@ResizeCB}, ...
             'CloseRequestFcn', @ShutDown);
         set(ui.main.activeCdfH, 'Callback', @activeCdfCB);
         set(ui.main.entryBoxH(:), 'callback', @entryLoadCB);
         set(ui.main.entryHelpH(:), 'callback', @entryOptionsCB);
         set(ui.main.sliderModeH, 'SelectionChangeFcn', @sliderModeCB);
-        set(ui.main.sliderModeB(:),'callback',@sliderModeCB)
+        set(ui.main.sliderModeB(:), 'callback', @sliderModeCB)
         % Set line callbacks
         for j = 1:numel(variable)
             set(ui.line(j).colorH(:), 'callback', @lineOptionsCB);
@@ -109,21 +113,16 @@ debugCB(); %exports data to workspace when testMode enabled
         set(ui.menu.lineBoxH(:), 'Callback', @plotOptionsCB);
         set(ui.menu.lineGridH(:), 'Callback', @plotOptionsCB);
         set(ui.menu.legendLocationH(:), 'Callback', @plotOptionsCB);
+        set(ui.menu.lineTransparencyH(:), 'Callback', @plotOptionsCB);
         set([ui.menu.ZoomInH, ui.menu.PanH], ...
             'Callback', @plotToolsCB);
         set(ui.menu.varListH, 'Callback', @openVarListCB);
         set(ui.menu.pointerListH, 'Callback', @openPointerListCB);
         set(ui.menu.consoleMH, 'Callback', @openConsoleCB);
         % slider listener
-        addlistener(ui.main.sliderH,'ContinuousValueChange',@sliderCB);
+        addlistener(ui.main.sliderH, 'ContinuousValueChange', @sliderCB);
     end
 
-for k = 1:numel(ui.main.entryHelpH)
-    HandHoverCursor(ui.main.entryHelpH(k))    
-    set(ui.main.entryHelpH(k), 'visible', 'off');
-end
-
-%% Callbacks
     function ResizeCB(varargin)
         ResizeFigure(ui, option);
     end
@@ -142,7 +141,7 @@ end
         debugCB();
     end
 
-    function openFileCB(src,evt)
+    function openFileCB(src, evt)
         % loads cdf into memeory
         [cdf, option] = OpenFile(src, evt, ui, cdf, option);
         if ~isempty(findobj('type', 'figure', 'name', 'Variable List'))
@@ -193,7 +192,7 @@ end
         % cancel call if no CDF is loaded
         if isempty(option.activeCdfIdx)
             SystemMsg(...
-                'Error:  Open a CDF before loading variable list.',...
+                'Error:  Open a CDF before loading variable list.', ...
                 'Warning', ui);
             return
         end
@@ -213,14 +212,15 @@ end
     function openPointerListCB(varargin)
         % cancel call if no CDF is loaded
         if isempty(option.activeCdfIdx)
-            SystemMsg('Error:  Open a CDF before loading pointer list.',...
+            SystemMsg('Error:  Open a CDF before loading pointer list.', ...
                 'Warning', ui);
             return
         end
         % build variable list window
         ui = VarListWindow('int8', cdf, option, ui);
         % set variable list callbacks
-        set(ui.pointerlist.tableH, 'CellSelectionCallback', @pointerListCellCB);
+        set(ui.pointerlist.tableH, ...
+            'CellSelectionCallback', @pointerListCellCB);
         set(ui.pointerlist.varidBH, 'callback', @pointerListSorterCB);
         set(ui.pointerlist.nameBH, 'callback', @pointerListSorterCB);
         set(ui.pointerlist.descriptionBH, 'callback', @pointerListSorterCB);
@@ -229,7 +229,7 @@ end
         debugCB();
     end
 
-    function varListSorterCB(src,~)
+    function varListSorterCB(src, ~)
         % sorts the variable list table
         data   = get(ui.varlist.tableH, 'data');
         tag    = get(ui.varlist.tableH, 'tag');
@@ -237,7 +237,7 @@ end
         VarListSorter(ui.varlist.tableH, data, tag, button)
     end
 
-    function pointerListSorterCB(src,~)
+    function pointerListSorterCB(src, ~)
         % sorts the pointer list table
         data   = get(ui.pointerlist.tableH, 'data');
         tag    = get(ui.pointerlist.tableH, 'tag');
@@ -245,16 +245,16 @@ end
         VarListSorter(ui.pointerlist.tableH, data, tag, button)
     end
 
-    function varListCellCB(~,evt)
+    function varListCellCB(~, evt)
         % automatically plots selected variables from the varlistwindow.
         % if statement avoids errors when sorting with a cell selected
         if numel(evt.Indices)
             idx      = evt.Indices(1);
             data     = get(ui.varlist.tableH, 'data');
-            varName  = data(idx,2);
+            varName  = data(idx, 2);
             entryBox = 1;
             set(0, 'currentfigure', ui.main.figH);
-            set(ui.main.entryBoxH(entryBox), 'string',data(idx,2));
+            set(ui.main.entryBoxH(entryBox), 'string', data(idx, 2));
             [variable, option] = ...
                 VarEntry(varName, entryBox, cdf, variable, option, ui);
             [variable, ui] = UpdateDisplay(variable, option, ui);
@@ -262,16 +262,16 @@ end
         debugCB();
     end
 
-    function pointerListCellCB(~,evt)
+    function pointerListCellCB(~, evt)
         % automatically plots selected variables from the varlistwindow.
         % if statement avoids errors when sorting with a cell selected
         if numel(evt.Indices)
             idx      = evt.Indices(1);
             data     = get(ui.pointerlist.tableH, 'data');
-            varName  = data(idx,2);
+            varName  = data(idx, 2);
             entryBox = 1;
             set(0, 'currentfigure', ui.main.figH);
-            set(ui.main.entryBoxH(entryBox), 'string',data(idx,2));
+            set(ui.main.entryBoxH(entryBox), 'string', data(idx, 2));
             [variable, option] = ...
                 VarEntry(varName, entryBox, cdf, variable, option, ui);
             [variable, ui] = UpdateDisplay(variable, option, ui);
@@ -287,7 +287,7 @@ end
         debugCB();
     end
 
-    function commandBoxCB(src,~)
+    function commandBoxCB(src, ~)
         % handles console window command box entries
         commandStr=strrep(get(src, 'string'), '>> ', '');
         ui = CommandBox(commandStr, cdf, variable, option, ui);
@@ -295,7 +295,8 @@ end
     end
 
     function plotOptionsCB(varargin)
-        [variable, ui, option] = PlotOptions(varargin{1}, variable, option, ui);
+        [variable, ui, option] = ...
+            PlotOptions(varargin{1}, variable, option, ui);
         debugCB();
     end
 

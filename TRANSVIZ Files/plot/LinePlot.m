@@ -63,7 +63,8 @@ for j = option.leadVar:numel(variable)
             'tag', num2str(j), ...
             'buttonDownFcn', @linePlotCB, ...
             'uicontextmenu', ui.line(j).menuH ...
-            );  %variable(j).linePlotH.Color(4)=0.8; %transparency
+            );  
+        variable(j).linePlotH.Color(4) = option.lineTransparency; 
     catch errorMsg
         getReport(errorMsg, 'extended', 'hyperlinks', 'on')
     end
@@ -85,6 +86,7 @@ ui.main.plotTimeH = text(...
 sliderString = SetSliderString(variable, option);
 set(ui.main.plotTimeH, 'string', sliderString);
 
+% axes options
 set(ui.main.axesH, ...
     'xgrid', option.lineGrid, ...
     'ygrid', option.lineGrid, ...
@@ -115,37 +117,25 @@ set(ui.main.legendH, ...
     'interpreter', 'tex' ...
     );
 
-% Shrink legend lines by factor 's'.
+% Shrink legend lines by factor 's', and add transparency option.
 s = 0.6; legLines = findobj(legIcons, 'type', 'line');
 for k = 1:numel(legLines)
     yD = get(legLines(k), 'xdata');
+    legLines(k).Color(4) = option.lineTransparency;
     if numel(yD)>1
         shiftDist = (yD(2)-yD(1))*(1-s);
         set(legLines(k), 'xdata', [yD(1) yD(2)*s]+shiftDist);
     end
 end
 
-
-
-% set legend 80% transparency
+% set legend background to 80% transparency
 ui.main.legendH.BoxFace.ColorData = uint8(255*[1;1;1;.8]);
-
-% % % Random MATLAB bug: OpenGL fails for data values of magnitude >= 10^22
-if strcmp(get(ui.main.figH, 'renderer'), 'OpenGL') && (maxY >= 10^(22) || (minY < -10^(22)))
-    set(ui.main.figH, 'renderer', 'painters')
-    SystemMsg(...
-        'OpenGL fails for large magnitudes, switching renderer to Painters.', ...
-        'Msg', ui);
-    [variable, ui, ~] = PlotOptions(ui.menu.rendererH(1), ...
-        variable, option, ui); 
-    % we dont need to save option when switching renderer
-end
 
 % set grid line style (only shows when enabled)
 ui.main.axesH.GridLineStyle = ':';
 ui.main.axesH.GridAlpha = 0.3;
 
-ResizeFigure(ui, option); %hacky type of fix - don't remember what for though.
+ResizeFigure(ui, option); %hacky type of fix - don't remember why needed.
 
     function linePlotCB(varargin)
     

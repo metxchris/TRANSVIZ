@@ -72,13 +72,16 @@ switch varStruct.Datatype
     case 'single'
         % load variable data
         varID = find(varStrcmp)-1;
-        variable(idx).Y.name  = varStruct.Name;
-        variable(idx).Y.units = StringCleaner(varStruct.Attributes(1).Value, 'Units');
-        variable(idx).Y.label = StringCleaner(varStruct.Attributes(2).Value, 'Label');
-        variable(idx).Y.data  = netcdf.getVar(cdf(option.activeCdfIdx).ncid, varID);
-        variable(idx).Y.size  = size(variable(idx).Y.data);
-        variable(idx).Y.max   = max(max(variable(idx).Y.data));
-        variable(idx).Y.min   = min(min(variable(idx).Y.data));
+        variable(idx).Y.name = varStruct.Name;
+        variable(idx).Y.units = ...
+            StringCleaner(varStruct.Attributes(1).Value, 'Units');
+        variable(idx).Y.label = ...
+            StringCleaner(varStruct.Attributes(2).Value, 'Label');
+        variable(idx).Y.data = ...
+            netcdf.getVar(cdf(option.activeCdfIdx).ncid, varID);
+        variable(idx).Y.size = size(variable(idx).Y.data);
+        variable(idx).Y.max = max(max(variable(idx).Y.data));
+        variable(idx).Y.min = min(min(variable(idx).Y.data));
         
         % Check to see how many dimensions variable has
         % 2 ~ Time, Position
@@ -89,15 +92,15 @@ switch varStruct.Datatype
                 % 1D variables are treated as row arrays for consistency.
                 variable(idx).Y.data = variable(idx).Y.data';
                 variable(idx).Y.size = size(variable(idx).Y.data);
-                dimNameT = varStruct.Dimensions.Name; dimNameX = 'TIME';
+                dimNameT = varStruct.Dimensions.Name; 
+                dimNameX = 'TIME';
             case 2
                 [dimNameX, dimNameT] = varStruct.Dimensions.Name;
         end
         
-        InterpolatedDimList = ...
-            {'X', 'XB', 'RMAJM', 'THETA', 'RMJSYM', 'MCINDX', 'TIME', ...
-            'ILDEN', 'ILIM', 'INTNC', 'IVISB'};
-        if ~strcmp(InterpolatedDimList, dimNameX)
+        InterpolatedDimList = keys(option.slider.map);
+        % skip first entry because it's blank
+        if ~strcmp({InterpolatedDimList{2:end}}, dimNameX) %#ok<CCAT1>
             if isempty(dimNameX)
                 dimNameX = '(none)';
             end
@@ -105,11 +108,12 @@ switch varStruct.Datatype
                 ' with x-axis dimension ', dimNameX, ...
                 ' does not have a defined interpolation grid.'];
             SystemMsg(errMsg, 'Error', ui);
-            [variable, option] = ClearVariable('', idx, variable, option, ui);
+            [variable, option] = ...
+                ClearVariable('', idx, variable, option, ui);
             % recalc slider values
             option = SetSliderValues(option, variable, ui);
             varY=[variable.Y];
-            option.leadVar = find(~cellfun(@isempty, {varY.name}), 1);
+            option.leadVar = find(~cellfun('isempty', {varY.name}), 1);
             if isempty(option.leadVar)
                 set(ui.main.sliderH, 'enable', 'off');
             end
@@ -117,31 +121,37 @@ switch varStruct.Datatype
         end
         
         % load time dimension
-        dimID     = netcdf.inqVarID(cdf(option.activeCdfIdx).ncid, dimNameT);
+        dimID = netcdf.inqVarID(cdf(option.activeCdfIdx).ncid, dimNameT);
         dimStruct = finfo.Variables(dimID+1);
-        variable(idx).T.name  = dimStruct.Name;
-        variable(idx).T.size  = dimStruct.Size;
-        variable(idx).T.units = StringCleaner(dimStruct.Attributes(1).Value, 'Units');
-        variable(idx).T.label = StringCleaner(dimStruct.Attributes(2).Value, 'Label');
-        variable(idx).T.data  = netcdf.getVar(cdf(option.activeCdfIdx).ncid, dimID)';
-        variable(idx).T.max   = max(max(variable(idx).T.data));
-        variable(idx).T.min   = min(min(variable(idx).T.data));
+        variable(idx).T.name = dimStruct.Name;
+        variable(idx).T.size = dimStruct.Size;
+        variable(idx).T.units = ...
+            StringCleaner(dimStruct.Attributes(1).Value, 'Units');
+        variable(idx).T.label = ...
+            StringCleaner(dimStruct.Attributes(2).Value, 'Label');
+        variable(idx).T.data = ...
+            netcdf.getVar(cdf(option.activeCdfIdx).ncid, dimID)';
+        variable(idx).T.max = max(max(variable(idx).T.data));
+        variable(idx).T.min = min(min(variable(idx).T.data));
         
         % load position dimension
         if numDimensions == 2
-            dimID     = netcdf.inqVarID(cdf(option.activeCdfIdx).ncid, dimNameX);
+            dimID = netcdf.inqVarID(cdf(option.activeCdfIdx).ncid, dimNameX);
             dimStruct = finfo.Variables(dimID+1);
             variable(idx).X.name  = dimStruct.Name;
             variable(idx).X.size  = dimStruct.Size;
-            variable(idx).X.units = StringCleaner(dimStruct.Attributes(1).Value, 'Units');
-            variable(idx).X.label = StringCleaner(dimStruct.Attributes(2).Value, 'Label');
-            variable(idx).X.data  = netcdf.getVar(cdf(option.activeCdfIdx).ncid, dimID);
+            variable(idx).X.units = ...
+                StringCleaner(dimStruct.Attributes(1).Value, 'Units');
+            variable(idx).X.label = ...
+                StringCleaner(dimStruct.Attributes(2).Value, 'Label');
+            variable(idx).X.data = ...
+                netcdf.getVar(cdf(option.activeCdfIdx).ncid, dimID);
         elseif numDimensions == 1
             variable(idx).X.name = '';
         end
         
         % Interpolation Step
-        variable(idx) = interpolateData(dimNameX, variable(idx));
+        variable(idx) = interpolateData(dimNameX, variable(idx), option);
         
         if numDimensions == 2
             variable(idx).numZones = cdf(option.activeCdfIdx).zones;
@@ -164,10 +174,6 @@ switch varStruct.Datatype
             case 'Line Plot'
                 % enable '+' button
                 set(ui.main.entryHelpH(idx), 'visible', 'on');
-                % remove '+' button borders again if needed (they sneak back)
-                %                 jButton = findjobj(ui.main.entryHelpH(idx));
-                %                 jButton.Border = [];
-                %                 jButton.repaint;
         end
         
         % set tooltip properties
@@ -253,12 +259,12 @@ end %switch varDatatype
     function option = SetSliderValues(option, variable, ui)
         % Calculate 'Time' slider values
         varT=[variable.T];
-        numericStep = 0.01; % seconds
+        numericStep = option.slider.map(variable(option.leadVar).T.name);
         if ~isempty(find([varT.name], 1))
             option.slider.T.max = max([varT.max]-numericStep);
             option.slider.T.min = min([varT.min]+numericStep);
             stepSize = ...
-                numericStep/(option.slider.T.max - option.slider.T.min);
+                numericStep/(option.slider.T.max-option.slider.T.min);
         else
             option.slider.T.max = 1;
             option.slider.T.min = 0;
@@ -266,8 +272,7 @@ end %switch varDatatype
         end
         option.slider.T.step = [stepSize 10*stepSize];% ratio from 0 to 1
         
-        numericStep = NumericStepDictionary( ...
-            variable(option.leadVar).X.name);
+        numericStep = option.slider.map(variable(option.leadVar).X.name);
 
         varX = variable.X;
         if ~isempty(find([varX.name], 1))
@@ -280,7 +285,7 @@ end %switch varDatatype
                 option.slider.X.max = max([varX.max]);
                 option.slider.X.min = min([varX.min]);
                 stepSize = ...
-                    numericStep/(option.slider.X.max - option.slider.X.min);
+                    numericStep/(option.slider.X.max-option.slider.X.min);
             end
         else
             option.slider.X.max = 1;
@@ -299,10 +304,9 @@ end %switch varDatatype
         option.slider.max   = double(newSlider.max);
         option.slider.min   = double(newSlider.min);
         option.slider.step  = double(newSlider.step);
-        
         % adjust slider value if out of bounds
         option.slider.value = BoundSliderValue(option);
-        
+        % save slider properties
         set(ui.main.sliderH                  , ...
             'Max', option.slider.max         , ...
             'Min', option.slider.min         , ...
@@ -310,7 +314,7 @@ end %switch varDatatype
             'value', option.slider.value);
     end % SetSliderValues
 
-    function variable = interpolateData(dimNameX, variable)
+    function variable = interpolateData(dimNameX, variable, option)
         % I'm leaving this as an inefficient way of doing things so that it
         % can easily be turned on/off if needed, and because this step
         % takes a negligable about of time to execute.
@@ -323,29 +327,30 @@ end %switch varDatatype
         X = variable.X.data;
         Y = variable.Y.data;
         
+        step = option.slider.map(dimNameX);
         switch dimNameX
             case {'X', 'XB'}
                 interpMode = 'single';
-                Xgrid = 0.01:0.01:1;
+                Xgrid = 0.01:step:1;
             case 'MCINDX'
                 interpMode = 'single';
-                Xgrid = 0.01:1/220:1;
+                Xgrid = 0.01:step:1;
             case {'THETA'}
                 interpMode = 'single';
-                Xgrid = -3.14:0.0628:3.14;
+                Xgrid = -3.14:step:3.14;
             case {'RMAJM', 'RMJSYM'}
                 interpMode = 'double';
                 Xmin  = round(min(min(variable.X.data))*10000)/10000;
                 Xmax  = round(max(max(variable.X.data))*10000)/10000;
-                Xgrid = Xmin:1:Xmax;
-            case 'TIME'
+                Xgrid = Xmin:step:Xmax;
+            case {'TIME', 'TIME3'}
                 interpMode = 'time';
-                Xgrid = 0.01:0.01:1;
+                Xgrid = 0.01:step:1;
             case {'ILDEN', 'ILIM', 'INTNC', 'IVISB'}
                 interpMode = 'single';
                 Xmin  = round(min(min(variable.X.data)));
                 Xmax  = round(max(max(variable.X.data)));
-                Xgrid = double(Xmin:1:Xmax);
+                Xgrid = double(Xmin:step:Xmax);
         end
         
         switch interpMode

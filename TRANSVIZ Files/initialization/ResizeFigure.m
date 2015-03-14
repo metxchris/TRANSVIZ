@@ -48,7 +48,7 @@ set(ui.main.systemMsgH, 'Position', [0,fP(4)-15, fP(3)+2, 16]);
 
 aP=get(ui.main.axesH, 'position');
 if ishandle(ui.main.plotTimeH)
-    set(ui.main.plotTimeH,'Position',[aP(3), aP(4)+8]);
+    set(ui.main.plotTimeH,'Position',[aP(3), aP(4)+9]);
 end
 
 end

@@ -34,11 +34,16 @@ switch parentName
     case 'Surface Box'
         option.surfaceBox = sourceLabel;
         set(ui.main.axesH, 'Box', option.surfaceBox);
-        
     case 'Legend Location'
         option.legendLocation = sourceLabel;
         try % silently avoid error if legend doesn't exist
             set(ui.main.legendH, 'location', option.legendLocation)
+        end
+    case 'Line Transparency'
+        option.lineTransparency = str2double(sourceLabel);
+        variable(option.leadVar).Y.name
+        if ~isempty(option.leadVar)
+            [variable, ui] = UpdateDisplay(variable, option, ui);
         end
     case 'Surface Style'
         option.surfaceStyle = sourceLabel;
