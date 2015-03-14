@@ -1,5 +1,5 @@
 function option = PlotMode(handle, variable, option, ui)
-
+SystemMsg('', '', ui); % clear system msg
 source = get(handle);
 option.plotMode = strrep(source.Label, '&', '');
 

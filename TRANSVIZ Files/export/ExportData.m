@@ -75,9 +75,11 @@ switch option.plotMode
                 'Warning', ui);
             return
         end
-        xData = num2cell(get(surfaceH, 'xd'));
-        tData = num2cell(get(surfaceH, 'yd'));
-        yData = num2cell(get(surfaceH, 'zd'));
+        get(surfaceH)
+        % the mixing of y, t, z below may look confusing.
+        xData = num2cell(get(surfaceH, 'XData'));
+        tData = num2cell(get(surfaceH, 'YData'));
+        yData = num2cell(get(surfaceH, 'ZData'));
         xName = variable(1).X.name; xUnits = variable(1).X.units;
         tName = variable(1).T.name; tUnits = variable(1).T.units;
         yName = variable(1).Y.name; yUnits = variable(1).Y.units;

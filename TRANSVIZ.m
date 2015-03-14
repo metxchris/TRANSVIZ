@@ -1,6 +1,6 @@
 function TRANSVIZ(varargin)
 %% About TRANSVIZ
-% TRANSVIZ v2.04, by Christopher Wilson (cwils16@u.rochester.edu)
+% TRANSVIZ v2.03, by Christopher Wilson (cwils16@u.rochester.edu)
 % Compatible with Matlab versions R2014+
 % Please email me about any bugs.
 

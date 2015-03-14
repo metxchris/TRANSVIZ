@@ -1,4 +1,4 @@
-TRANSVIZ v2.04
+TRANSVIZ v2.03
 by Christopher Wilson 
 
 Compatibility Note:
