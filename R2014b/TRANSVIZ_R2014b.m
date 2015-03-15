@@ -134,7 +134,7 @@ debugCB(); %exports data to workspace when testMode enabled
         if isa(handle, 'matlab.ui.container.ButtonGroup')
             % cancel call for the button group.
             % why does R2014b call with the button group and the button as
-            % well? R2013a didn't do this.
+            % well? R2014a didn't do this.
             return
         end
         option = SliderMode(handle, variable, option, ui);

@@ -1,7 +1,7 @@
-function TRANSVIZ_R2013a(varargin)
+function TRANSVIZ_R2014a(varargin)
 %% About TRANSVIZ
-% TRANSVIZ v2.03 (R2013a), by Christopher Wilson (cwils16@u.rochester.edu).
-% Please email me about any bugs.
+% TRANSVIZ v2.03 (R2014a), by Christopher Wilson.
+% Please email me about any bugs (cwils16@u.rochester.edu).
 
 %% Additional Potential Updates
 % freeze line feature - displays grayscale copy of current plot in the

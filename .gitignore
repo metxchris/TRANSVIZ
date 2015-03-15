@@ -1,6 +1,7 @@
 # MATLAB temp files
 *.asv
 *.prj
+Mcc
 
 # Windows image file caches
 Thumbs.db
