@@ -36,9 +36,6 @@ end
 ui = BuildUI(option, variable);
 SetCallbacks(ui);
 
-% set Matlab version info
-option.MatlabVersion = 'R2014b';
-
 % set initial menu options
 plotOptionsCB(ui.menu.plotModeH(1)) % Line Plot
 plotOptionsCB(ui.menu.rendererH(1)) % OpenGL
