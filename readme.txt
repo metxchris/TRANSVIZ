@@ -1,7 +1,7 @@
 Two versions of TRANSVIZ exist due to the incompatibility of the new R2014b graphics engine with the older engine in R2013a.  The differences between each TRANSVIZ Matlab version are:
 
 [R2014b]
-* Figures (especially several line options) and text look much better as compared to the R2013a version.  Legends have a semi*transparent background; a line*transparency option was added.
+* Figures (especially several line options) and text look much better as compared to the R2013a version.  Legends have a semi*transparent background; a line transparency option was added.
 * Figures and exported .eps files are less glitchy.
 * The compiled executable comes with a loading splash screen, and will prompt the user to download the appropriate Matlab compiler runtime (MCR) if needed.
 * Known Bug: .eps figure exports have additional white space; this will need to be manually cropped afterwards.
