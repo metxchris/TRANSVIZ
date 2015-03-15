@@ -1,8 +1,7 @@
-function [ui,option] = ActiveCDF(ui, cdf, option)
+function [ui, option] = ActiveCDF(ui, cdf, option)
 if option.testMode>0
     disp('ActiveCDF.m called');
 end;
-SystemMsg('', '', ui); % clear system msg
 idx = get(gcbo,'value');
 if ~isempty(cdf(idx).ncid)
     % switch active cdf

@@ -26,7 +26,8 @@ if isempty(entryName)
     [variable, option] = ClearVariable('all', idx, variable, option, ui);
     return
 end
-
+variable(idx).cdfName 
+cdfName = option.cdfList{option.activeCdfIdx}
 variable(idx).cdfName = option.cdfList{option.activeCdfIdx};
 finfo = cdf(option.activeCdfIdx).finfo;
 
@@ -154,12 +155,12 @@ switch varStruct.Datatype
         variable(idx) = interpolateData(dimNameX, variable(idx), option);
         
         if numDimensions == 2
-            variable(idx).numZones = cdf(option.activeCdfIdx).zones;
+            variable(idx).numZones = numel(variable(idx).Y.data(:, 1));
         elseif numDimensions == 1
             variable(idx).numZones = 1;
         end
         
-        variable(idx).numTimes = cdf(option.activeCdfIdx).times;
+        variable(idx).numTimes = numel(variable(idx).Y.data(1, :));
         
         % stores the top-most active entry box, for purposes of
         % determining plotted and exported labels
@@ -192,10 +193,10 @@ switch varStruct.Datatype
             '<tr><td>Units:&nbsp;</td><td> ', ...
             variable(idx).Y.units, '</td></tr>', ...
             '<tr><td colspan="2"><hr></td></tr>', ...
-            '<tr><td>Zones:&nbsp;</td><td>', ...
-            num2str(variable(idx).numZones), '</td></tr>', ...
             '<tr><td>Times:&nbsp;</td><td>', ...
             num2str(variable(idx).numTimes), '</td></tr>', ...
+            '<tr><td>Positions:&nbsp;</td><td>', ...
+            num2str(variable(idx).numZones), '</td></tr>', ...
             '</table></html>'];
         set(ui.main.entryBoxH(idx), 'visible', 'on', ...
             'tooltipstring', tooltipstring);
@@ -211,7 +212,7 @@ switch varStruct.Datatype
             num2str(fctID), '.'];
         SystemMsg(msg, 'Msg', ui);
         [variable, option] = ClearVariable('', idx, variable, option, ui);
-        return
+        
         
     otherwise
         errMsg = ['Error: Variable ''', entryName, ...
@@ -253,6 +254,8 @@ end %switch varDatatype
         variable.T = varFields;
         variable.cdfName   = {''};
         variable.linePlotH = [];
+        variable.numTimes = [];
+        variable.numZones = [];
         set(ui.main.entryHelpH(idx), 'visible', 'off');
     end % ResetVarFields
 

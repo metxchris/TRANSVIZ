@@ -157,7 +157,7 @@ debugCB(); %exports data to workspace when testMode enabled
             openVarListCB() % reload var list to reflect new cdf
         end
         if ~isempty(findobj('type', 'figure', 'name', 'Pointer List'))
-            openVarListCB() % reload var list to reflect new cdf
+            openPointerListCB() % reload var list to reflect new cdf
         end
         debugCB();
     end
@@ -170,7 +170,7 @@ debugCB(); %exports data to workspace when testMode enabled
     end
 
     function sliderCB(varargin)
-        %option.sliderValue does not get updated until after the function
+        %option.slider.value does not get updated until after the function
         %call, this allows us to bipass the function call when the
         %sliderValue does not change during an update.
         sliderValue = varargin{1}.Value;
@@ -220,7 +220,7 @@ debugCB(); %exports data to workspace when testMode enabled
         ui = VarListWindow('int8', cdf, option, ui);
         % set variable list callbacks
         set(ui.pointerlist.tableH, ...
-            'CellSelectionCallback', @pointerListCellCB);
+            'CellSelectionCallback', @varListCellCB);
         set(ui.pointerlist.varidBH, 'callback', @pointerListSorterCB);
         set(ui.pointerlist.nameBH, 'callback', @pointerListSorterCB);
         set(ui.pointerlist.descriptionBH, 'callback', @pointerListSorterCB);
@@ -245,39 +245,30 @@ debugCB(); %exports data to workspace when testMode enabled
         VarListSorter(ui.pointerlist.tableH, data, tag, button)
     end
 
-    function varListCellCB(~, evt)
+    function varListCellCB(varargin)
         % automatically plots selected variables from the varlistwindow.
         % if statement avoids errors when sorting with a cell selected
-        if numel(evt.Indices)
-            idx      = evt.Indices(1);
-            data     = get(ui.varlist.tableH, 'data');
-            varName  = data(idx, 2);
+        event = varargin{2};
+        if numel(event.Indices)
+            tableRow = event.Indices(1);
+            tableData = get(varargin{1}, 'data');
+            varName = tableData(tableRow, 2);
             entryBox = 1;
             set(0, 'currentfigure', ui.main.figH);
-            set(ui.main.entryBoxH(entryBox), 'string', data(idx, 2));
+            set(ui.main.entryBoxH(entryBox), 'string', varName);
             [variable, option] = ...
                 VarEntry(varName, entryBox, cdf, variable, option, ui);
-            [variable, ui] = UpdateDisplay(variable, option, ui);
+             % only update display for varlistwindow.  Random bugs when
+             % doing this for the pointerlistwindow. 
+            if numel(get(varargin{1}, 'ColumnName')) == 6
+                [variable, ui] = UpdateDisplay(variable, option, ui);
+            end
         end
         debugCB();
     end
-
-    function pointerListCellCB(~, evt)
-        % automatically plots selected variables from the varlistwindow.
-        % if statement avoids errors when sorting with a cell selected
-        if numel(evt.Indices)
-            idx      = evt.Indices(1);
-            data     = get(ui.pointerlist.tableH, 'data');
-            varName  = data(idx, 2);
-            entryBox = 1;
-            set(0, 'currentfigure', ui.main.figH);
-            set(ui.main.entryBoxH(entryBox), 'string', data(idx, 2));
-            [variable, option] = ...
-                VarEntry(varName, entryBox, cdf, variable, option, ui);
-            [variable, ui] = UpdateDisplay(variable, option, ui);
-        end
-        debugCB();
-    end
+%         [variable, option] = VarEntry(src, evt, cdf, variable, option, ui);
+%         [variable, ui] = UpdateDisplay(variable, option, ui);
+%         debugCB();
 
     function openConsoleCB(varargin)
         % build console gui

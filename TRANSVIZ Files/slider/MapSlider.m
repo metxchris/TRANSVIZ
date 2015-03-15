@@ -7,19 +7,19 @@ nonEmptyIdx = ~cellfun('isempty', {variableY.name});
 % get conversion factor to map from slider value to array idx value
 switch option.slider.mode
     case 'Time'
-        conversion = 1/option.slider.map(variable(option.leadVar).T.name);
-    
+        step = option.slider.map(variable(option.leadVar).T.name);
         variableR = [variable.T];
+        idxMax = [variable.numTimes];
     case 'Position'
-        conversion = 1/option.slider.map(variable(option.leadVar).X.name);
+        step = option.slider.map(variable(option.leadVar).X.name);
         variableR = [variable.X];
+        idxMax = [variable.numZones];
 end
-% Bound idx value for each variable, then convert to integer
-varIdx = max(option.slider.value, [variableR.min]);
-varIdx = min(varIdx, [variableR.max]);
-varIdx = round((varIdx - [variableR.min])*conversion + 1);
+% Bound idx value for each variable (idxVal is an array)
+idxVal = max(round((option.slider.value-[variableR.min])/step + 1), 1);
+idxVal = min(idxVal, idxMax);
 % preallocate sIdx array, then save varIdx data
 sIdx =(NaN(1, numel(variable)));
-sIdx(nonEmptyIdx) = varIdx;
+sIdx(nonEmptyIdx) = idxVal;
 
 end % MapSlider
