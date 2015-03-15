@@ -1,4 +1,4 @@
-function [variable, option] = VarEntry(src, evt, cdf, variable, option, ui)
+function [variable, option] = VarEntry(handle, cdf, variable, option, ui)
 %% Internal Functions:
 % variable = ResetVarFields(idx, variable, ui)
 % option = SetSliderValues(option, variable, ui)
@@ -8,15 +8,9 @@ function [variable, option] = VarEntry(src, evt, cdf, variable, option, ui)
 % netcdf methods, which may be a useful alternative for data extraction.
 % NetCDF matrix data displays dimensionally as POS x TIME
 
-if isnumeric(evt)
-    % when called by the variable list
-    entryName = char(strrep(upper(src), ' ', ''));
-    idx = evt;
-else
-    % when the user enters a variable
-    entryName = char(strrep(upper(get(src, 'String')), ' ', ''));
-    idx = str2double(get(src, 'tag'));
-end
+% get entered variable name and entryBox number.
+entryName = char(strrep(upper(get(handle, 'String')), ' ', ''));
+idx = str2double(get(handle, 'tag'));
 
 % clear systemMsg
 SystemMsg('', '', ui);
@@ -26,8 +20,7 @@ if isempty(entryName)
     [variable, option] = ClearVariable('all', idx, variable, option, ui);
     return
 end
-variable(idx).cdfName 
-cdfName = option.cdfList{option.activeCdfIdx}
+
 variable(idx).cdfName = option.cdfList{option.activeCdfIdx};
 finfo = cdf(option.activeCdfIdx).finfo;
 

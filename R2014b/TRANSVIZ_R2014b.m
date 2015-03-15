@@ -1,7 +1,6 @@
-function TRANSVIZ(varargin)
+function TRANSVIZ_R2014b(varargin)
 %% About TRANSVIZ
-% TRANSVIZ v2.03, by Christopher Wilson (cwils16@u.rochester.edu)
-% Compatible with Matlab versions R2014+
+% TRANSVIZ v2.03 (R2014b), by Christopher Wilson (cwils16@u.rochester.edu).
 % Please email me about any bugs.
 
 %% Additional Potential Updates
@@ -21,7 +20,7 @@ end
 
 % Initialization (genpath adds all subfolders as well)
 addpath(genpath('TRANSVIZ Files'));
-addpath(genpath('TRANSVIZ\TRANSVIZ Files'));
+
 close all %close all windows
 clc       %clear command window
 pause on  %enable pausing capabilities
@@ -36,6 +35,9 @@ end
 [cdf, variable, option] = InitializeStructs(testMode);
 ui = BuildUI(option, variable);
 SetCallbacks(ui);
+
+% set Matlab version info
+option.MatlabVersion = 'R2014b';
 
 % set initial menu options
 plotOptionsCB(ui.menu.plotModeH(1)) % Line Plot
@@ -64,6 +66,14 @@ for k =1:numel(variable)
     end
 end
 
+ResizeFigure(ui, option); % needed in R2014b version
+
+% set '+' button cursor, also removes border
+for k = 1:numel(ui.main.entryHelpH)
+    HandHoverCursor(ui.main.entryHelpH(k))    
+    set(ui.main.entryHelpH(k), 'visible', 'off');
+end
+
 % Set Splash Screen
 if ~option.testMode || isempty(cdfPath)
     SplashMsg(ui); %Set splash screen text
@@ -71,12 +81,6 @@ else
     [cdf, option] = OpenFile(cdfPath, 1, ui, cdf, option);
 end
 
-ResizeFigure(ui, option);
-% set '+' button cursor, also removes border
-for k = 1:numel(ui.main.entryHelpH)
-    HandHoverCursor(ui.main.entryHelpH(k))    
-    set(ui.main.entryHelpH(k), 'visible', 'off');
-end
 debugCB(); %exports data to workspace when testMode enabled
 
 %% Callbacks
@@ -162,9 +166,10 @@ debugCB(); %exports data to workspace when testMode enabled
         debugCB();
     end
 
-    function entryLoadCB(src, evt)
+    function entryLoadCB(varargin)
         % loads variable from cdf
-        [variable, option] = VarEntry(src, evt, cdf, variable, option, ui);
+        handle = varargin{1};
+        [variable, option] = VarEntry(handle, cdf, variable, option, ui);
         [variable, ui] = UpdateDisplay(variable, option, ui);
         debugCB();
     end
@@ -199,13 +204,11 @@ debugCB(); %exports data to workspace when testMode enabled
         % build variable list window
         ui = VarListWindow('single', cdf, option, ui);
         % set variable list callbacks
-        set(ui.varlist.tableH, 'CellSelectionCallback', @varListCellCB);
-        set(ui.varlist.varidBH, 'callback', @varListSorterCB);
-        set(ui.varlist.nameBH, 'callback', @varListSorterCB);
-        set(ui.varlist.descriptionBH, 'callback', @varListSorterCB);
-        set(ui.varlist.sizeBH, 'callback', @varListSorterCB);
-        set(ui.varlist.dimensionsBH, 'callback', @varListSorterCB);
-        set(ui.varlist.unitsBH, 'callback', @varListSorterCB);
+        set(ui.varlist.tableH, 'CellSelectionCallback', @tableCellCB);
+        set([ui.varlist.varidBH, ui.varlist.nameBH, ...
+            ui.varlist.descriptionBH, ui.varlist.unitsBH, ...
+            ui.varlist.sizeBH, ui.varlist.dimensionsBH], ...
+            'callback', @columnSorterCB);
         debugCB();
     end
 
@@ -216,48 +219,40 @@ debugCB(); %exports data to workspace when testMode enabled
                 'Warning', ui);
             return
         end
-        % build variable list window
+        % build pointer list window
         ui = VarListWindow('int8', cdf, option, ui);
-        % set variable list callbacks
-        set(ui.pointerlist.tableH, ...
-            'CellSelectionCallback', @varListCellCB);
-        set(ui.pointerlist.varidBH, 'callback', @pointerListSorterCB);
-        set(ui.pointerlist.nameBH, 'callback', @pointerListSorterCB);
-        set(ui.pointerlist.descriptionBH, 'callback', @pointerListSorterCB);
-        set(ui.pointerlist.unitsBH, 'callback', @pointerListSorterCB);
-        set(ui.pointerlist.fctidsBH, 'callback', @pointerListSorterCB);
+        % set pointer list callbacks
+        set(ui.pointerlist.tableH, 'CellSelectionCallback', @tableCellCB);
+        set([ui.pointerlist.varidBH, ui.pointerlist.nameBH, ...
+            ui.pointerlist.descriptionBH, ui.pointerlist.unitsBH, ...
+            ui.pointerlist.fctidsBH], ...
+            'callback', @columnSorterCB);
         debugCB();
     end
 
-    function varListSorterCB(src, ~)
-        % sorts the variable list table
-        data   = get(ui.varlist.tableH, 'data');
-        tag    = get(ui.varlist.tableH, 'tag');
+    function columnSorterCB(src, ~)
+        % sorts table columns for varlist and pointerlist
         button = get(src, 'tag');
-        VarListSorter(ui.varlist.tableH, data, tag, button)
+        srcFigH = get(src, 'Parent');
+        tableH = findobj(srcFigH, 'type', 'uitable');
+        data   = get(tableH, 'data');
+        tag    = get(tableH, 'tag');
+        VarListSorter(tableH, data, tag, button)
     end
 
-    function pointerListSorterCB(src, ~)
-        % sorts the pointer list table
-        data   = get(ui.pointerlist.tableH, 'data');
-        tag    = get(ui.pointerlist.tableH, 'tag');
-        button = get(src, 'tag');
-        VarListSorter(ui.pointerlist.tableH, data, tag, button)
-    end
-
-    function varListCellCB(varargin)
+    function tableCellCB(varargin)
         % automatically plots selected variables from the varlistwindow.
         % if statement avoids errors when sorting with a cell selected
+        entryBoxH = ui.main.entryBoxH(1);
         event = varargin{2};
         if numel(event.Indices)
             tableRow = event.Indices(1);
             tableData = get(varargin{1}, 'data');
             varName = tableData(tableRow, 2);
-            entryBox = 1;
             set(0, 'currentfigure', ui.main.figH);
-            set(ui.main.entryBoxH(entryBox), 'string', varName);
+            set(entryBoxH, 'string', varName);
             [variable, option] = ...
-                VarEntry(varName, entryBox, cdf, variable, option, ui);
+                VarEntry(entryBoxH, cdf, variable, option, ui);
              % only update display for varlistwindow.  Random bugs when
              % doing this for the pointerlistwindow. 
             if numel(get(varargin{1}, 'ColumnName')) == 6
@@ -266,9 +261,6 @@ debugCB(); %exports data to workspace when testMode enabled
         end
         debugCB();
     end
-%         [variable, option] = VarEntry(src, evt, cdf, variable, option, ui);
-%         [variable, ui] = UpdateDisplay(variable, option, ui);
-%         debugCB();
 
     function openConsoleCB(varargin)
         % build console gui
