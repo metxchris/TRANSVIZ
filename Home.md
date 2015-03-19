@@ -10,8 +10,8 @@ Two versions of TRANSVIZ exist due to the incompatibility of the new R2014b grap
 * R2014b:
  * Figures (especially several line options) and text look much better as compared to the R2014a version.  Legends have a semi transparent background; a line transparency option was added.
  * Figures and exported .eps files are less glitchy.
- * Known Bug: .eps figure exports have additional white space; this will need to be manually cropped afterwards.
- * Known Bug: To avoid another random bug, plot updating has been disabled when clicking on variables in the pointer list window.
+ * Known Bug: .eps exports have additional white space; this will need to be manually cropped afterwards.
+ * Known Bug: To avoid another random bug, plot updating has been disabled when clicking on pointers in the pointer list window.
 
 * R2014a:
  * Uses older graphics engine with limited capabilities and several glitches, as compared to the newer R2014b graphics engine.
