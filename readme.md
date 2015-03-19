@@ -1,4 +1,3 @@
-###Matlab version differences:
 Two versions of TRANSVIZ exist due to the incompatibility of the new R2014b graphics engine with the older engine in R2014a.  The differences between each TRANSVIZ Matlab version are:
 
 * R2014b:
