@@ -1,1 +1,0 @@
-[Download Latest Release](https://github.com/metxchris/TRANSVIZ/releases)
