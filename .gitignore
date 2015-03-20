@@ -2,6 +2,7 @@
 *.asv
 *.prj
 Mcc
+Console Output
 
 # Windows image file caches
 Thumbs.db
