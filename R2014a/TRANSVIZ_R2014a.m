@@ -2,6 +2,7 @@ function TRANSVIZ_R2014a(varargin)
 %% About TRANSVIZ
 % TRANSVIZ v2.03 (R2014a), by Christopher Wilson.
 % Please email me about any bugs (cwils16@u.rochester.edu).
+% Changes made to this file and PlotMode as comapred to R2014b.
 
 %% Additional Potential Updates
 % freeze line feature - displays grayscale copy of current plot in the
@@ -91,26 +92,21 @@ debugCB(); %exports data to workspace when testMode enabled
         set(ui.main.sliderModeB(:), 'callback', @sliderModeCB)
         % Set line callbacks
         for j = 1:numel(variable)
-            set(ui.line(j).colorH(:), 'callback', @lineOptionsCB);
-            set(ui.line(j).styleH(:), 'callback', @lineOptionsCB);
-            set(ui.line(j).thickH(:), 'callback', @lineOptionsCB);
-            set(ui.line(j).markerH(:), 'callback', @lineOptionsCB);
-            set(ui.line(j).sizeH(:), 'callback', @lineOptionsCB);
-            set(ui.line(j).fillH(:), 'callback', @lineOptionsCB);
+            set([ui.line(j).colorH(:); ui.line(j).styleH(:); ...
+                ui.line(j).thickH(:); ui.line(j).markerH(:); ...
+                ui.line(j).sizeH(:); ui.line(j).fillH(:)], ...
+                'callback', @lineOptionsCB);
         end
         % Set menu callbacks
         set(ui.menu.openFMH, 'Callback', @openFileCB);
         set(ui.menu.exportFigureMH, 'Callback', @exportFigureCB);
         set(ui.menu.exportDataMH, 'Callback', @exportDataCB);
         set(ui.menu.plotModeH(:), 'Callback', @plotModeCB);
-        set(ui.menu.rendererH(:), 'Callback', @plotOptionsCB);
-        set(ui.menu.surfaceStyleH(:), 'Callback', @plotOptionsCB);
-        set(ui.menu.surfaceBoxH(:), 'Callback', @plotOptionsCB);
-        set(ui.menu.surfaceGridH(:), 'Callback', @plotOptionsCB);
-        set(ui.menu.colorMapH(:), 'Callback', @plotOptionsCB);
-        set(ui.menu.lineBoxH(:), 'Callback', @plotOptionsCB);
-        set(ui.menu.lineGridH(:), 'Callback', @plotOptionsCB);
-        set(ui.menu.legendLocationH(:), 'Callback', @plotOptionsCB);
+        set([ui.menu.rendererH(:); ui.menu.surfaceStyleH(:); ...
+            ui.menu.surfaceBoxH(:); ui.menu.surfaceGridH(:); ...
+            ui.menu.colorMapH(:); ui.menu.lineBoxH(:); ...
+            ui.menu.lineGridH(:); ui.menu.legendLocationH(:)], ...
+            'Callback', @plotOptionsCB);
         set([ui.menu.ZoomInH, ui.menu.PanH], ...
             'Callback', @plotToolsCB);
         set(ui.menu.varListH, 'Callback', @openVarListCB);
@@ -218,8 +214,8 @@ debugCB(); %exports data to workspace when testMode enabled
         button = get(src, 'tag');
         srcFigH = get(src, 'Parent');
         tableH = findobj(srcFigH, 'type', 'uitable');
-        data   = get(tableH, 'data');
-        tag    = get(tableH, 'tag');
+        data = get(tableH, 'data');
+        tag = get(tableH, 'tag');
         VarListSorter(tableH, data, tag, button)
     end
 

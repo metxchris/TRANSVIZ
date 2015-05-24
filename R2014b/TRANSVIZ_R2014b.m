@@ -85,6 +85,7 @@ debugCB(); %exports data to workspace when testMode enabled
     function SetCallbacks(ui)
         % Set main callbacks
         set(ui.main.figH, ...
+            'WindowScrollWheelFcn', @figScroll, ...
             'ResizeFcn', {@ResizeCB}, ...
             'CloseRequestFcn', @ShutDown);
         set(ui.main.activeCdfH, 'Callback', @activeCdfCB);
@@ -180,6 +181,20 @@ debugCB(); %exports data to workspace when testMode enabled
             SliderUpdate(sliderValue, variable, option, ui);
     end
 
+    function figScroll(varargin)
+        if isempty(option.leadVar)
+            return
+        end
+        step = -varargin{2}.VerticalScrollCount * ...
+            option.slider.map(variable(option.leadVar).X.name);
+        sliderValue = option.slider.value + step;
+        sliderValue = min(sliderValue, option.slider.max);
+        sliderValue = max(sliderValue, option.slider.min);
+        sliderValue = double(sliderValue);
+        option.slider.value = ...
+            SliderUpdate(sliderValue, variable, option, ui);
+    end % figScroll
+
     function exportFigureCB(varargin)
         % exports image of plotted data
         ExportFigure(option, ui);
@@ -270,7 +285,7 @@ debugCB(); %exports data to workspace when testMode enabled
     function commandBoxCB(src, ~)
         % handles console window command box entries
         commandStr=strrep(get(src, 'string'), '>> ', '');
-        ui = CommandBox(commandStr, cdf, variable, option, ui);
+        [cdf, variable, option, ui] = CommandBox(commandStr, cdf, variable, option, ui);
         debugCB();
     end
 

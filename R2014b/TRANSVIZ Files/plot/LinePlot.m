@@ -136,7 +136,7 @@ ui.main.axesH.GridLineStyle = ':';
 ui.main.axesH.GridAlpha = 0.3;
 
 ResizeFigure(ui, option); %hacky type of fix - don't remember why needed.
-
+        
     function linePlotCB(varargin)
     
     end

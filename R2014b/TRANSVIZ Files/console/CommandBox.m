@@ -1,4 +1,11 @@
-function ui = CommandBox(commandStr, cdf, variable, option, ui)
+function [cdf, variable, option, ui] = CommandBox(commandStr, cdf, variable, option, ui)
+%% warning: 
+% this code is a mess and has not been cleaned up in the update to TRANSVIZ
+% version 2.
+
+% all structs cdf, variable, option, ui are input into this function so
+% that they are accessible when using the console.  Otherwise, the first
+% three aren't used in the code below.
 
 % Do i need to do all this file saving?
 fileName = 'Console Output\Message';
@@ -22,13 +29,17 @@ diary(fileName)
 
 set(0, 'currentfigure', ui.main.figH);
 try
-    if ~strcmp(commandStr,'clc')
-        set(gcbo,'string','');
-        eval(commandStr)
-    else
-        set(ui.console.outputH,'string',' ');
-        set(gcbo,'string','');
-        return
+    switch commandStr
+        case 'clc'
+            set(ui.console.outputH,'string',' ');
+            set(gcbo,'string','&nbsp;');
+            return
+        case 'whos'
+            set(gcbo,'string','');
+            eval('whos cdf option ui variable')
+        otherwise
+            set(gcbo,'string','');
+            eval(commandStr)
     end
     errorMsg='';
 catch errorMsg

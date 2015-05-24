@@ -14,9 +14,12 @@ SetBackgroundColor(ui, 'white');
 try
     switch option.plotMode
         case 'Line Plot'
-            print(ui.main.figH, '-depsc', '-noui', '-opengl', ...
+            % painters rendering prints vectorized image.
+            print(ui.main.figH, '-depsc', '-noui', '-painters', ...
                 [pathName, fileName]);
         case 'Surface Plot'
+            % using open gl for surface plots. painters very slow on
+            % surface plots, and vectorized image not needed here.
             print(ui.main.figH, '-depsc', '-noui', '-opengl', ...
                 [pathName, fileName]);
     end

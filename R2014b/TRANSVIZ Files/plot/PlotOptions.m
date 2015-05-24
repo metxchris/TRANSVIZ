@@ -41,7 +41,6 @@ switch parentName
         end
     case 'Line Transparency'
         option.lineTransparency = str2double(sourceLabel);
-        variable(option.leadVar).Y.name
         if ~isempty(option.leadVar)
             [variable, ui] = UpdateDisplay(variable, option, ui);
         end

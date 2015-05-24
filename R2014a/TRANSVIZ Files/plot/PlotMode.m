@@ -3,57 +3,49 @@ function option = PlotMode(handle, variable, option, ui)
 source = get(handle);
 option.plotMode = strrep(source.Label, '&', '');
 
-lineMenuHandles = [ui.menu.legendLocationMH, ui.menu.lineGridMH, ...
-    ui.menu.lineBoxMH];
-surfMenuHandles = [ui.menu.colorMapMH, ui.menu.surfaceGridMH, ...
-    ui.menu.surfaceBoxMH, ui.menu.surfaceStyleMH];
-cla; % clear axis
 switch option.plotMode
     case 'Line Plot'
-        set(ui.main.sliderH, 'visible', 'on');
-        try
-            set(ui.main.legendH,'visible','on')
-        end
-        for j = 1:numel(variable)
-            if ~isempty(variable(j).Y.name)
-                set(ui.main.entryHelpH(j), 'visible', 'on');
-                jButton = findjobj(ui.main.entryHelpH(j));
-                jButton.Border = [];
-                jButton.repaint;
-            end
-        end
-        set(ui.main.entryBoxH(2:end), 'visible', 'on');
-        set(ui.main.entryLabelH(2:end), 'visible', 'on');
-        set(ui.main.sliderModeB(:), 'visible', 'on');
-        set(ui.main.textHeaderH(3), 'visible', 'on');
-        set(ui.main.sliderModeH, 'visible', 'on');
-        
-        try
-            set(ui.main.rotate3dH,'enable','off');
-        end
-        set(lineMenuHandles, 'visible', 'on');
-        set(surfMenuHandles, 'visible', 'off');
+        SetLineHandles(ui, 'visible', 'on');
+        SetEntryHandles(ui, variable, 'visible', 'on');
+        SetSurfaceHandles(ui, 'visible', 'off');
+        try set(ui.main.rotate3dH, 'enable', 'off'); end %#ok<*TRYNC>
     case 'Surface Plot'
-        set(ui.main.sliderH, 'visible', 'off');
-        try
-            set(ui.main.legendH,'visible','off')
-        end
-        set(ui.main.entryHelpH(:), 'visible', 'off');
-        try
-            set([variable(:).linePlotH],'visible','off');
-            set(ui.main.plotTimeH, 'visible', 'off');
-        end
-        set(ui.main.entryBoxH(2:end), 'visible', 'off');
-        set(ui.main.entryLabelH(2:end), 'visible', 'off');
-        set(ui.main.sliderModeB(:), 'visible', 'off');
-        set(ui.main.textHeaderH(3), 'visible', 'off');
-        set(ui.main.sliderModeH, 'visible', 'off');
-        set(lineMenuHandles, 'visible', 'off');
-        set(surfMenuHandles, 'visible', 'on');
-        
+        SetLineHandles(ui, 'visible', 'off');
+        SetEntryHandles(ui, variable, 'visible', 'off');
+        SetSurfaceHandles(ui, 'visible', 'on');
 end
 
 % update check marks for menu items
 MenuCheckMarks(handle);
+
+%% Internal functions
+
+    function SetLineHandles(ui, type, state)
+        set(ui.main.entryBoxH(2:end), type, state);
+        set(ui.main.entryLabelH(2:end), type, state);
+        set(ui.main.sliderModeB(:), type, state);
+        set([ui.menu.legendLocationMH, ui.menu.lineGridMH, ...
+            ui.menu.lineBoxMH, ui.main.sliderModeH, ...
+            ui.main.sliderH, ui.main.textHeaderH(3)], type, state);
+    end
+
+    function SetSurfaceHandles(ui, type, state)
+        set([ui.menu.colorMapMH, ui.menu.surfaceGridMH, ...
+            ui.menu.surfaceBoxMH, ui.menu.surfaceStyleMH], type, state);
+    end
+
+    function SetEntryHandles(ui, variable, type, state)
+        switch state
+            case 'on'
+                for j = 1:numel(variable)
+                    if ~isempty(variable(j).Y.name)
+                        set(ui.main.entryHelpH(j), 'visible', 'on');
+                        HandHoverCursor(ui.main.entryHelpH(j));
+                    end
+                end
+            case 'off'
+                set(ui.main.entryHelpH(:), type, state);
+        end
+    end
 
 end
