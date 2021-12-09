@@ -3,7 +3,7 @@ function [variable, ui, option] = PlotOptions(handle, variable, option, ui)
 SystemMsg('', '', ui); % clear systemMsg
 
 source = get(handle);
-sourceLabel = strrep(source.Label, '&', '');
+sourceLabel = strrep(source.Text, '&', '');
 parentName = strrep(get(source.Parent, 'Label'), '&', '');
 switch parentName
     case 'Renderer'

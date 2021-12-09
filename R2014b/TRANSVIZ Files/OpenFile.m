@@ -84,20 +84,20 @@ end
 %         break
 %     end
 % end
-
-try
-    date = strsplit( ...
-        netcdf.getAtt(cdf(idx).ncid, cdf(idx).varid, 'CDF_date'), ' ');
-    cdf(idx).date =date{1};
-    set(ui.main.activeCdfH, 'value', idx);
-    SystemMsg(['File ', tempName, ' successfully loaded'], 'Msg', ui);
-catch err
-    % This error will likely occur if the cdf data structure is
-    % different from that used for DIII-D or NSTX files.
-    errMsg = ['Error: Failed to load file', tempName, ...
-        '. Please check that this is a valid .CDF file.'];
-    SystemMsg(errMsg, 'Error', ui);
-    getReport(err, 'extended')
-end
+SystemMsg(['File ', tempName, ' successfully loaded'], 'Msg', ui);
+% try
+%     date = strsplit( ...
+%         netcdf.getAtt(cdf(idx).ncid, cdf(idx).varid, 'CDF_date'), ' ');
+%     cdf(idx).date =date{1};
+%     set(ui.main.activeCdfH, 'value', idx);
+%     SystemMsg(['File ', tempName, ' successfully loaded'], 'Msg', ui);
+% catch err
+%     % This error will likely occur if the cdf data structure is
+%     % different from that used for DIII-D or NSTX files.
+%     errMsg = ['Error: Failed to load file', tempName, ...
+%         '. Please check that this is a valid .CDF file.'];
+%     SystemMsg(errMsg, 'Error', ui);
+%     getReport(err, 'extended')
+% end
 
 end

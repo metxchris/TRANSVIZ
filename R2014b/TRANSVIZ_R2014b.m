@@ -13,7 +13,7 @@ function TRANSVIZ_R2014b(varargin)
 %% TRANSVIZ Code
 % Set testMode; 1 for testing, 0 for normal operation
 if isempty(varargin)
-    testMode = 0;
+    testMode = 1;
 else
     testMode = 1;
 end
@@ -25,7 +25,7 @@ close all %close all windows
 clc       %clear command window
 pause on  %enable pausing capabilities
 
-testFile = 'C:\Users\MetxChris\Documents\MATLAB\101391T25.CDF';
+testFile = 'C:\Users\metxc\Documents\MMM-Package\cdfs\132017T01.CDF';
 if testMode && exist(testFile, 'file')
     cdfPath = testFile;
 else
@@ -67,7 +67,7 @@ ResizeFigure(ui, option); % needed in R2014b version
 
 % set '+' button cursor, also removes border
 for k = 1:numel(ui.main.entryHelpH)
-    HandHoverCursor(ui.main.entryHelpH(k))    
+%     HandHoverCursor(ui.main.entryHelpH(k))    
     set(ui.main.entryHelpH(k), 'visible', 'off');
 end
 
